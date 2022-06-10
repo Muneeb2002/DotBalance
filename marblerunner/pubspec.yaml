@@ -32,6 +32,7 @@ dependencies:
   sensors_plus: ^1.2.2 #gyroscope
   flame: ^1.2.0 #game engine
   # services: ^0.0.1 # fjerner bar
+  image: ^2.1.14
 
 
 
@@ -39,9 +40,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
 
-flutter:
-  assets:
-        - assets/images/background.jpg
+
     
 
 dev_dependencies:
@@ -65,6 +64,9 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  assets:
+    - assets/images/test.png
+    - assets/images/ball.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
