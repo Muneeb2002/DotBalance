@@ -1,18 +1,12 @@
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
-import 'package:flame/geometry.dart';
 import 'package:flame/input.dart';
 import 'package:flame/palette.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 import 'package:sensors_plus/sensors_plus.dart';
-// import 'package:flame/image.dart';
-import 'package:flame/flame.dart';
-import 'package:flame/sprite.dart';
 
 // import
-
 BallGame ballGame = BallGame();
 
 final paint = BasicPalette.red.paint()..style = PaintingStyle.fill;
@@ -60,7 +54,7 @@ class _HomeWidgetState extends State<HomeWidget> {
   }
 }
 
-class gyro extends _HomeWidgetState {
+class Gyro extends _HomeWidgetState {
   @override
   void initState() {
     super.initState();
@@ -152,7 +146,7 @@ class BallGame extends FlameGame with HasTappables {
   @override
   update(double dt) {
     super.update(dt);
-    gyro().initState();
+    Gyro().initState();
   }
 
   @override
@@ -207,8 +201,8 @@ class BallGame extends FlameGame with HasTappables {
             (circle.position.y < triggerList[i][j][1] &&
                 circle.position.y > triggerList[i][j][1] - (height / 5))) {
           textb.text = '${triggerList[i][j][2]} && ${triggerList[i][j][3]}';
-          background.position.x -= triggerList[i][j][2]/50;
-          background.position.y -= triggerList[i][j][3]/50;
+          background.position.x -= triggerList[i][j][2] / 50;
+          background.position.y -= triggerList[i][j][3] / 50;
         }
       }
     }
