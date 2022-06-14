@@ -199,12 +199,7 @@ class BallGame extends FlameGame with HasTappables {
 
 
   void move(List gyro) {
-    // List tal = [gyro[0] - startAcceleration[0], gyro[1]- startAcceleration[1], gyro[2]- startAcceleration[2]];
-    // textb.text = "${tal[0]},  ${tal[1]}, ${tal[2]}";
 
-    // background.position = Vector2(-gyro[0]*50+width/2, -gyro[1]*50+height/2);
-
-    // textb.text = MotionSensors.
 
 
     if (recalibrate) {
@@ -214,26 +209,41 @@ class BallGame extends FlameGame with HasTappables {
       triggerX = width / 2;
       triggerY = height / 2;
     }
-    try {
-      if (triggerX > 2*circle.size.x && triggerX < width - 2*circle.size.x) {
-        triggerX = ((gyro[0] - startAcceleration[0]) * 100 + width / 2);
-      } else if (triggerX <= 2*circle.size.x) {
-        triggerX = 6*circle.size.x;
-      } else if (triggerX >= width - 2*circle.size.x) {
-        triggerX = width - 6*circle.size.x;
-      }
 
-      if (triggerY > 2*circle.size.y && triggerY < height - 2*circle.size.y) {
-        triggerY = ((gyro[1] - startAcceleration[1]) * 100 + height / 2);
-      } else if (triggerY <= 2*circle.size.y) {
-        triggerY = 6*circle.size.y;
-      } else if (triggerY >= height - 2*circle.size.y) {
-        triggerY = height - 6*circle.size.y;
-      }
-    } catch (e) {
-      print(e);
-      // todo: fuck der det her en god cowboy løsning
+    triggerX = ((gyro[0] - startAcceleration[0]) * 100 + width / 2);
+    triggerY = ((gyro[1] - startAcceleration[1]) * 100 + height / 2);
+    if (triggerX <= 2*circle.size.x) {
+        triggerX = 6*circle.size.x;
+    } else if (triggerX >= width - 2*circle.size.x) {
+        triggerX = width - 6*circle.size.x;
     }
+
+    if (triggerY <= 2*circle.size.y) {
+        triggerY = 6*circle.size.y;
+    } else if (triggerY >= height - 2*circle.size.y) {
+        triggerY = height - 6*circle.size.y;
+    }
+
+  //   try {
+  //     if (triggerX > 2*circle.size.x && triggerX < width - 2*circle.size.x) {
+  //       triggerX = ((gyro[0] - startAcceleration[0]) * 100 + width / 2);
+  //     } else if (triggerX <= 2*circle.size.x) {
+  //       triggerX = 6*circle.size.x;
+  //     } else if (triggerX >= width - 2*circle.size.x) {
+  //       triggerX = width - 6*circle.size.x;
+  //     }
+
+  //     if (triggerY > 2*circle.size.y && triggerY < height - 2*circle.size.y) {
+  //       triggerY = ((gyro[1] - startAcceleration[1]) * 100 + height / 2);
+  //     } else if (triggerY <= 2*circle.size.y) {
+  //       triggerY = 6*circle.size.y;
+  //     } else if (triggerY >= height - 2*circle.size.y) {
+  //       triggerY = height - 6*circle.size.y;
+  //     }
+  //   } catch (e) {
+  //     print(e);
+  //     // todo: fuck der det her en god cowboy løsning
+  //   }
 
     circle.position.x = triggerX;
     circle.position.y = triggerY;
@@ -252,6 +262,7 @@ class BallGame extends FlameGame with HasTappables {
     }
   }
 }
+
 
 class RecalibrateButton extends SpriteComponent with Tappable {
   @override
