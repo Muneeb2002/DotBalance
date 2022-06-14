@@ -31,8 +31,12 @@ dependencies:
     sdk: flutter
   # services: any # fjerner bar
   services: ^0.0.1
-  sensors_plus: ^1.3.2 #gyroscope
+  # sensors_plus: ^1.3.2 #gyroscope
+  # flutter_sensors: ^1.0.1
+  # sensors: ^0.4.1+7
   # sensors_plus:  ^0.6.0
+  motion_sensors: ^0.1.0
+
 
   flame: ^1.2.0 #game engine
   image: ^2.1.14
@@ -44,8 +48,8 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
 
-dependency_overrides:
-  plugin_platform_interface: ^2.0.0
+# dependency_overrides:
+  # plugin_platform_interface: ^2.0.0
 
 dev_dependencies:
   flutter_test:

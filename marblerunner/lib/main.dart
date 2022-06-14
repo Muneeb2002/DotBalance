@@ -6,11 +6,15 @@ import 'package:flame/palette.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
-import 'package:sensors_plus/sensors_plus.dart';
+// import 'package:sensors_plus/sensors_plus.dart';
 // import 'package:flame/image.dart';
 import 'package:flame/flame.dart';
 import 'package:flame/sprite.dart';
 import 'package:flutter/services.dart';
+// import 'package:flutter_sensors/flutter_sensors.dart';
+// import 'package:sensors/sensors.dart';
+import 'package:motion_sensors/motion_sensors.dart';
+import 'dart:async';
 
 // import
 
@@ -31,10 +35,9 @@ TextBoxComponent textb = TextBoxComponent();
 
 double triggerX = 0, triggerY = 0;
 
-bool recalibrate = false;
+bool recalibrate = true;
 
-int pausecount = 0;
-bool pauseMovement = false;
+List startAcceleration = [0, 0, 0];
 
 double width = 0;
 double height = 0;
@@ -44,9 +47,8 @@ var triggerList = List.generate(
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [
-    SystemUiOverlay.bottom
-  ]); 
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+      overlays: [SystemUiOverlay.bottom]);
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
@@ -78,8 +80,17 @@ class gyro extends _HomeWidgetState {
   @override
   void initState() {
     super.initState();
-    gyroscopeEvents.listen((GyroscopeEvent event) {
-      ballGame.move([event.x, event.y, event.z]);
+    // gyroscopeEvents.listen((GyroscopeEvent event) {
+    //   ballGame.move([event.x, event.y, event.z]);
+    // });
+    // userAccelerometerEvents.listen((UserAccelerometerEvent event) {
+    //   ballGame.move([event.x, event.y, event.z]);
+    // });
+    // motionSensors.gyroscope.listen((GyroscopeEvent event) {
+    //   ballGame.move([event.x, event.y, event.z]);
+    // });
+    motionSensors.accelerometer.listen((AccelerometerEvent event) {
+      ballGame.move([event.y, event.x, event.z]);
     });
   }
 }
@@ -111,6 +122,7 @@ class BallGame extends FlameGame with HasTappables {
     textb.text = "test2";
     textb.position = Vector2(width / 2, 200);
     textb.size = Vector2(400, 400);
+
     add(textb);
 
     recalibrateButton
@@ -118,6 +130,9 @@ class BallGame extends FlameGame with HasTappables {
       ..position = Vector2(width - 50, height - 50)
       ..size = Vector2(50, 50);
     add(recalibrateButton);
+
+    motionSensors.accelerometerUpdateInterval =
+        Duration.microsecondsPerSecond ~/ 60;
   }
 
   void triggerListInit() {
@@ -164,12 +179,16 @@ class BallGame extends FlameGame with HasTappables {
       ..position = Vector2(width / 2, height / 2);
 
     add(ball);
+
+    gyro().initState();
+
   }
 
   @override
   update(double dt) {
     super.update(dt);
-    gyro().initState();
+    
+    // move(getGyro());
   }
 
   @override
@@ -177,51 +196,44 @@ class BallGame extends FlameGame with HasTappables {
     super.render(canvas);
   }
 
+
+
   void move(List gyro) {
+    // List tal = [gyro[0] - startAcceleration[0], gyro[1]- startAcceleration[1], gyro[2]- startAcceleration[2]];
+    // textb.text = "${tal[0]},  ${tal[1]}, ${tal[2]}";
+
+    // background.position = Vector2(-gyro[0]*50+width/2, -gyro[1]*50+height/2);
+
+    // textb.text = MotionSensors.
+
+
     if (recalibrate) {
+      print("this should be recalibrated");
       recalibrate = false;
+      startAcceleration = gyro;
       triggerX = width / 2;
       triggerY = height / 2;
     }
-
-    // print(size[0]);
     try {
-      // print(size[0]);
-      if (triggerX > 0 && triggerX < width) {
-        triggerX += gyro[0] / 3;
-      } else if (triggerX <= 0) {
-        triggerX = 5;
-      } else if (triggerX >= width) {
-        triggerX = width - 5;
+      if (triggerX > 2*circle.size.x && triggerX < width - 2*circle.size.x) {
+        triggerX = ((gyro[0] - startAcceleration[0]) * 100 + width / 2);
+      } else if (triggerX <= 2*circle.size.x) {
+        triggerX = 6*circle.size.x;
+      } else if (triggerX >= width - 2*circle.size.x) {
+        triggerX = width - 6*circle.size.x;
       }
 
-      if (triggerY > 0 && triggerY < height) {
-        triggerY -= gyro[1] / 3;
-      } else if (triggerY <= 0) {
-        triggerY = 5;
-      } else if (triggerY >= height) {
-        triggerY = height - 5;
+      if (triggerY > 2*circle.size.y && triggerY < height - 2*circle.size.y) {
+        triggerY = ((gyro[1] - startAcceleration[1]) * 100 + height / 2);
+      } else if (triggerY <= 2*circle.size.y) {
+        triggerY = 6*circle.size.y;
+      } else if (triggerY >= height - 2*circle.size.y) {
+        triggerY = height - 6*circle.size.y;
       }
     } catch (e) {
       print(e);
       // todo: fuck der det her en god cowboy løsning
     }
-
-    // if(){
-
-    // }
-
-    // if(circle.position.x > 0 && circle.position.x < width) {
-    // circle.position.x += gyro[0] / 2;
-    // }
-
-    // if(circle.position.y > 0 && circle.position.y < height) {
-    // circle.position.y += gyro[1] / 2;
-    // }
-    // background.position.x -= gyro[0] / 20;
-    // background.position.y += gyro[1] / 20;
-    // print(triggerList);
-    // textb.text = "x: ${gyro[0]} y: ${gyro[1]} ";
 
     circle.position.x = triggerX;
     circle.position.y = triggerY;
@@ -233,40 +245,13 @@ class BallGame extends FlameGame with HasTappables {
             (triggerY < triggerList[i][j][1] &&
                 triggerY > triggerList[i][j][1] - (height / 3))) {
           // textb.text = '${triggerList[i][j][2]} && ${triggerList[i][j][3]}';
-          background.position.x -= triggerList[i][j][2] / 50;
-          background.position.y -= triggerList[i][j][3] / 50;
+          background.position.x -= triggerList[i][j][2]*3;
+          background.position.y -= triggerList[i][j][3]*3;
         }
       }
     }
   }
-
-  // List getGyro() {
-  //   double x = 5;
-  //   double y = 0;
-  //   double z = 0;
-  //   List coord = [0, 0, 0];
-  //   gyroscopeEvents.listen((GyroscopeEvent event) {
-  //     x = event.x;
-  //     y = event.y;
-  //     z = event.z;
-  //     coord = [x, y, z];
-  //   });
-  //   // print(coord);
-  //   return coord;
-  // }
 }
-
-// class Player extends FlameGame{
-
-//     @override
-//     Future<void> onLoad() async{
-//       add(circle);
-//     double middelx = size[0] / 2;
-//     double middely = size[1] / 2;
-
-//     }
-
-// }
 
 class RecalibrateButton extends SpriteComponent with Tappable {
   @override
