@@ -59,7 +59,7 @@ class Gyro extends _HomeWidgetState {
   void initState() {
     super.initState();
     gyroscopeEvents.listen((GyroscopeEvent event) {
-      ballGame.move([event.x, event.y, event.z]);
+      ballGame.move([event.x, event.y]);
     });
   }
 }
@@ -97,18 +97,15 @@ class BallGame extends FlameGame with HasTappables {
     add(recalibrateButton);
   }
 
+  // creates the points/corners for the movement areas
   void triggerListInit() {
-    for (int i = 1; i <= 5; i++) {
-      for (int j = 1; j <= 5; j++) {
-        triggerList[i - 1][j - 1][0] = i * (width / 5);
-        triggerList[i - 1][j - 1][1] = j * (height / 5);
-        triggerList[i - 1][j - 1][2] = -3 + i * 1.0;
-        triggerList[i - 1][j - 1][3] = -3 + j * 1.0;
-      }
-    }
-
     for (int i = 0; i < 5; i++) {
       for (int j = 0; j < 5; j++) {
+        triggerList[i][j][0] = (i + 1) * (width / 5); // x-coordinate
+        triggerList[i][j][1] = (j + 1) * (height / 5); // y-coordinate
+        triggerList[i][j][2] = -3 + (i + 1) * 1.0; // movement val for x
+        triggerList[i][j][3] = -3 + (j + 1) * 1.0; // movement val for y
+
         add(CircleComponent(
             radius: 20,
             position: Vector2(triggerList[i][j][0], triggerList[i][j][1]),
@@ -116,6 +113,7 @@ class BallGame extends FlameGame with HasTappables {
             anchor: Anchor.center));
       }
     }
+
     // print(triggerList);
     // add(CircleComponent(
     //         radius: 20,
@@ -163,16 +161,23 @@ class BallGame extends FlameGame with HasTappables {
     // print(size[0]);
     try {
       // print(size[0]);
-      if (circle.position.x > 0 && circle.position.x < width) {
-        circle.position.x += gyro[0] / 2;
+      print(gyro);
+      if (circle.position.x > 0 &&
+              circle.position.x < width &&
+              gyro[1] / 2 > 0.002 ||
+          gyro[1] / 2 < -0.002) {
+        circle.position.x += gyro[1] / 2;
       } else if (circle.position.x <= 0) {
         circle.position.x = 5;
       } else if (circle.position.x >= width) {
         circle.position.x = width - 5;
       }
 
-      if (circle.position.y > 0 && circle.position.y < height) {
-        circle.position.y -= gyro[1] / 2;
+      if (circle.position.y > 0 &&
+              circle.position.y < height &&
+              gyro[0] / 2 > 0.002 ||
+          gyro[0] / 2 < -0.002) {
+        circle.position.y += gyro[0] / 2;
       } else if (circle.position.y <= 0) {
         circle.position.y = 5;
       } else if (circle.position.y >= height) {
@@ -201,6 +206,7 @@ class BallGame extends FlameGame with HasTappables {
             (circle.position.y < triggerList[i][j][1] &&
                 circle.position.y > triggerList[i][j][1] - (height / 5))) {
           textb.text = '${triggerList[i][j][2]} && ${triggerList[i][j][3]}';
+
           background.position.x -= triggerList[i][j][2] / 50;
           background.position.y -= triggerList[i][j][3] / 50;
         }
