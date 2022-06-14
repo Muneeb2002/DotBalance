@@ -10,6 +10,7 @@ import 'package:sensors_plus/sensors_plus.dart';
 // import 'package:flame/image.dart';
 import 'package:flame/flame.dart';
 import 'package:flame/sprite.dart';
+import 'package:flutter/services.dart';
 
 // import
 
@@ -32,13 +33,26 @@ double triggerX = 0, triggerY = 0;
 
 bool recalibrate = false;
 
+int pausecount = 0;
+bool pauseMovement = false;
+
 double width = 0;
 double height = 0;
 var triggerList = List.generate(
-    5, (_) => List.generate(5, (_) => List.generate(4, (_) => 0.0)));
+    3, (_) => List.generate(3, (_) => List.generate(4, (_) => 0.0)));
 
 void main() {
-  runApp(HomeWidget());
+  WidgetsFlutterBinding.ensureInitialized();
+
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [
+    SystemUiOverlay.bottom
+  ]); 
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
+  ]).then((value) => runApp(HomeWidget()));
+
+  // runApp(HomeWidget());
 }
 
 class HomeWidget extends StatefulWidget {
@@ -89,9 +103,12 @@ class BallGame extends FlameGame with HasTappables {
     circle.position = Vector2(middelx, middely);
     circle.size = Vector2(20, 20);
 
+    triggerX = width / 2;
+    triggerY = height / 2;
+
     triggerListInit();
 
-    textb.text = "sike";
+    textb.text = "test2";
     textb.position = Vector2(width / 2, 200);
     textb.size = Vector2(400, 400);
     add(textb);
@@ -104,17 +121,17 @@ class BallGame extends FlameGame with HasTappables {
   }
 
   void triggerListInit() {
-    for (int i = 1; i <= 5; i++) {
-      for (int j = 1; j <= 5; j++) {
-        triggerList[i - 1][j - 1][0] = i * (width / 5);
-        triggerList[i - 1][j - 1][1] = j * (height / 5);
-        triggerList[i - 1][j - 1][2] = -3 + i * 1.0;
-        triggerList[i - 1][j - 1][3] = -3 + j * 1.0;
+    for (int i = 1; i <= 3; i++) {
+      for (int j = 1; j <= 3; j++) {
+        triggerList[i - 1][j - 1][0] = i * (width / 3);
+        triggerList[i - 1][j - 1][1] = j * (height / 3);
+        triggerList[i - 1][j - 1][2] = -2 + i * 1.0;
+        triggerList[i - 1][j - 1][3] = -2 + j * 1.0;
       }
     }
 
-    for (int i = 0; i < 5; i++) {
-      for (int j = 0; j < 5; j++) {
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
         add(CircleComponent(
             radius: 20,
             position: Vector2(triggerList[i][j][0], triggerList[i][j][1]),
@@ -134,7 +151,7 @@ class BallGame extends FlameGame with HasTappables {
   void loadPictures() async {
     background = SpriteComponent()
       ..sprite = await loadSprite('test.png')
-      ..size = Vector2(1000, 1000)
+      ..size = Vector2(4000, 4000)
       ..anchor = Anchor.center
       ..position = Vector2(width / 2, height / 2);
 
@@ -163,31 +180,36 @@ class BallGame extends FlameGame with HasTappables {
   void move(List gyro) {
     if (recalibrate) {
       recalibrate = false;
-      circle.position.x = width / 2;
-      circle.position.y = height / 2;
+      triggerX = width / 2;
+      triggerY = height / 2;
     }
+
     // print(size[0]);
     try {
       // print(size[0]);
-      if (circle.position.x > 0 && circle.position.x < width) {
-        circle.position.x += gyro[0] / 2;
-      } else if (circle.position.x <= 0) {
-        circle.position.x = 5;
-      } else if (circle.position.x >= width) {
-        circle.position.x = width - 5;
+      if (triggerX > 0 && triggerX < width) {
+        triggerX += gyro[0] / 3;
+      } else if (triggerX <= 0) {
+        triggerX = 5;
+      } else if (triggerX >= width) {
+        triggerX = width - 5;
       }
 
-      if (circle.position.y > 0 && circle.position.y < height) {
-        circle.position.y -= gyro[1] / 2;
-      } else if (circle.position.y <= 0) {
-        circle.position.y = 5;
-      } else if (circle.position.y >= height) {
-        circle.position.y = height - 5;
+      if (triggerY > 0 && triggerY < height) {
+        triggerY -= gyro[1] / 3;
+      } else if (triggerY <= 0) {
+        triggerY = 5;
+      } else if (triggerY >= height) {
+        triggerY = height - 5;
       }
     } catch (e) {
       print(e);
       // todo: fuck der det her en god cowboy løsning
     }
+
+    // if(){
+
+    // }
 
     // if(circle.position.x > 0 && circle.position.x < width) {
     // circle.position.x += gyro[0] / 2;
@@ -200,15 +222,19 @@ class BallGame extends FlameGame with HasTappables {
     // background.position.y += gyro[1] / 20;
     // print(triggerList);
     // textb.text = "x: ${gyro[0]} y: ${gyro[1]} ";
-    for (int i = 0; i < 5; i++) {
-      for (int j = 0; j < 5; j++) {
-        if ((circle.position.x < triggerList[i][j][0] &&
-                circle.position.x > triggerList[i][j][0] - (width / 5)) &&
-            (circle.position.y < triggerList[i][j][1] &&
-                circle.position.y > triggerList[i][j][1] - (height / 5))) {
-          textb.text = '${triggerList[i][j][2]} && ${triggerList[i][j][3]}';
-          background.position.x -= triggerList[i][j][2]/50;
-          background.position.y -= triggerList[i][j][3]/50;
+
+    circle.position.x = triggerX;
+    circle.position.y = triggerY;
+
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        if ((triggerX < triggerList[i][j][0] &&
+                triggerX > triggerList[i][j][0] - (width / 3)) &&
+            (triggerY < triggerList[i][j][1] &&
+                triggerY > triggerList[i][j][1] - (height / 3))) {
+          // textb.text = '${triggerList[i][j][2]} && ${triggerList[i][j][3]}';
+          background.position.x -= triggerList[i][j][2] / 50;
+          background.position.y -= triggerList[i][j][3] / 50;
         }
       }
     }
