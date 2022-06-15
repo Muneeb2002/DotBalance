@@ -36,14 +36,16 @@ TextBoxComponent textb = TextBoxComponent();
 double triggerX = 0, triggerY = 0;
 
 bool recalibrate = true;
+//TODO : skal sættes til true igen;
 
 List startAcceleration = [0, 0, 0];
 
 double width = 0;
 double height = 0;
 
-double gridCellSize = 50;
+double gridCellSize = 1;
 int gridSize = 50;
+List<Wall> walls = [];
 
 List<List<List<int>>> grid = List.generate(gridSize,
     (_) => List.generate(gridSize, (_) => List.generate(5, (_) => 0)));
@@ -120,6 +122,7 @@ class BallGame extends FlameGame with HasTappables {
     loadPictures();
 
     createGrid();
+    createMaze();
 
     add(circle);
     double middelx = size[0] / 2;
@@ -172,20 +175,32 @@ class BallGame extends FlameGame with HasTappables {
       }
     }
 
-    final paint = BasicPalette.red.paint()..style = PaintingStyle.stroke;
     for (int i = 0; i < gridSize; i++) {
       for (int j = 0; j < gridSize; j++) {
         for (int k = 0; k < 4; k++) {
-          if (k == 0 || k == 2) {
-            add(RectangleComponent(
-              size: Vector2(gridCellSize, 5),
-              position: Vector2(grid[i][j]),
-            ));
+          if ((k == 0 && grid[i][j][0] == 1) ||
+              (k == 2 && grid[i][j][2] == 1)) {
+            Vector2 size = Vector2(gridCellSize, 5);
+            Vector2 position = Vector2(i * gridCellSize, j * gridCellSize);
+            Anchor anchor = Anchor.centerLeft;
+            walls.add(Wall(size: size, position: position, anchor: anchor));
+          }
+          if ((k == 1 && grid[i][j][1] == 1) ||
+              (k == 3 && grid[i][j][3] == 1)) {
+            Vector2 size = Vector2(5, gridCellSize);
+            Vector2 position = Vector2(i * gridCellSize, j * gridCellSize);
+            Anchor anchor = Anchor.topCenter;
+            walls.add(Wall(size: size, position: position, anchor: anchor));
           }
         }
       }
     }
+    for (int i = 0; i < walls.length; i++) {
+      add(walls[i]);
+    }
   }
+
+  void createMaze() {}
 
   void triggerListInit() {
     for (int i = 1; i <= 3; i++) {
@@ -218,8 +233,8 @@ class BallGame extends FlameGame with HasTappables {
   void loadPictures() async {
     background = SpriteComponent()
       ..sprite = await loadSprite('test.png')
-      // ..size = Vector2(width / 0.3333, height / (47 / 250))
-      ..size = Vector2(0.3333, (47 / 250))
+      ..size = Vector2(width / 0.3333, height / (47 / 250))
+      // ..size = Vector2(0.3333, (47 / 250))
       ..anchor = Anchor.center
       ..position = Vector2(width / 2, height / 2);
 
@@ -239,7 +254,6 @@ class BallGame extends FlameGame with HasTappables {
   @override
   update(double dt) {
     super.update(dt);
-
     // move(getGyro());
   }
 
@@ -249,12 +263,18 @@ class BallGame extends FlameGame with HasTappables {
   }
 
   void move(List gyro) {
+    // print(gyro);
+
     if (recalibrate) {
-      // print("this should be recalibrated");
+      print("this should be recalibrated");
       recalibrate = false;
       startAcceleration = gyro;
       triggerX = width / 2;
       triggerY = height / 2;
+      for (int i = 0; i < walls.length; i++) {
+        // walls.visible = false;
+        walls[i].position.x++;
+      }
     }
 
     List tal = [
@@ -326,4 +346,14 @@ class RecalibrateButton extends SpriteComponent with Tappable {
     recalibrate = true;
     return true;
   }
+}
+
+class Wall extends RectangleComponent {
+  Wall({position, size, anchor})
+      : super(
+            position: position,
+            size: size,
+            anchor: anchor,
+            // visible: true,
+            paint: BasicPalette.red.paint()..style = PaintingStyle.fill);
 }
