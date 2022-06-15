@@ -41,6 +41,13 @@ List startAcceleration = [0, 0, 0];
 
 double width = 0;
 double height = 0;
+
+double gridCellSize = 50;
+int gridSize = 50;
+
+List<List<List<int>>> grid = List.generate(gridSize,
+    (_) => List.generate(gridSize, (_) => List.generate(5, (_) => 0)));
+
 var triggerList = List.generate(
     3, (_) => List.generate(3, (_) => List.generate(4, (_) => 0.0)));
 
@@ -68,11 +75,12 @@ class _HomeWidgetState extends State<HomeWidget> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+        debugShowCheckedModeBanner: false,
         home: Scaffold(
-      body: Container(
-        child: GameWidget(game: BallGame()),
-      ),
-    ));
+          body: Container(
+            child: GameWidget(game: BallGame()),
+          ),
+        ));
   }
 }
 
@@ -102,17 +110,23 @@ class BallGame extends FlameGame with HasTappables {
 
   @override
   Future<void> onLoad() async {
-    width = size[0];
-
-    height = size[1];
+    if (size[0] > size[1]) {
+      width = size[0];
+      height = size[1];
+    } else {
+      width = size[1];
+      height = size[0];
+    }
     loadPictures();
+
+    createGrid();
 
     add(circle);
     double middelx = size[0] / 2;
     double middely = size[1] / 2;
 
     circle.position = Vector2(middelx, middely);
-    circle.size = Vector2(20, 20);
+    circle.size = Vector2(width / 66.667, height / (188 / 5));
 
     triggerX = width / 2;
     triggerY = height / 2;
@@ -120,19 +134,57 @@ class BallGame extends FlameGame with HasTappables {
     triggerListInit();
 
     textb.text = "test2";
-    textb.position = Vector2(width / 2, 200);
-    textb.size = Vector2(400, 400);
+
+    textb.position = Vector2(width / 2, 2 * height / 6);
+    textb.size = Vector2(width / 3.333, height / (47 / 25));
 
     add(textb);
 
     recalibrateButton
       ..sprite = await loadSprite('ball.png')
-      ..position = Vector2(width - 50, height - 50)
-      ..size = Vector2(50, 50);
+      ..size = Vector2(width / 26.666, height / (376 / 25))
+      ..position = Vector2(
+          width - recalibrateButton.size.x, height - recalibrateButton.size.y);
     add(recalibrateButton);
 
     motionSensors.accelerometerUpdateInterval =
         Duration.microsecondsPerSecond ~/ 60;
+  }
+
+  void createGrid() {
+    for (int i = 0; i < gridSize; i++) {
+      for (int j = 0; j < gridSize; j++) {
+        for (int k = 0; k < 4; k++) {
+          grid[i][j][k] = 1;
+        }
+        if (i == 0) {
+          grid[i][j][0] = 0;
+        }
+        if (i == gridSize - 1) {
+          grid[i][j][2] = 0;
+        }
+        if (j == 0) {
+          grid[i][j][3] = 0;
+        }
+        if (j == gridSize - 1) {
+          grid[i][j][1] = 0;
+        }
+      }
+    }
+
+    final paint = BasicPalette.red.paint()..style = PaintingStyle.stroke;
+    for (int i = 0; i < gridSize; i++) {
+      for (int j = 0; j < gridSize; j++) {
+        for (int k = 0; k < 4; k++) {
+          if (k == 0 || k == 2) {
+            add(RectangleComponent(
+              size: Vector2(gridCellSize, 5),
+              position: Vector2(grid[i][j]),
+            ));
+          }
+        }
+      }
+    }
   }
 
   void triggerListInit() {
@@ -166,7 +218,8 @@ class BallGame extends FlameGame with HasTappables {
   void loadPictures() async {
     background = SpriteComponent()
       ..sprite = await loadSprite('test.png')
-      ..size = Vector2(4000, 4000)
+      // ..size = Vector2(width / 0.3333, height / (47 / 250))
+      ..size = Vector2(0.3333, (47 / 250))
       ..anchor = Anchor.center
       ..position = Vector2(width / 2, height / 2);
 
@@ -174,20 +227,19 @@ class BallGame extends FlameGame with HasTappables {
 
     SpriteComponent ball = SpriteComponent()
       ..sprite = await loadSprite('ball.png')
-      ..size = Vector2(50, 50)
+      ..size = Vector2(width / 26.666, height / (376 / 25))
       ..anchor = Anchor.center
       ..position = Vector2(width / 2, height / 2);
 
     add(ball);
 
     gyro().initState();
-
   }
 
   @override
   update(double dt) {
     super.update(dt);
-    
+
     // move(getGyro());
   }
 
@@ -196,54 +248,59 @@ class BallGame extends FlameGame with HasTappables {
     super.render(canvas);
   }
 
-
-
   void move(List gyro) {
-
-
-
     if (recalibrate) {
-      print("this should be recalibrated");
+      // print("this should be recalibrated");
       recalibrate = false;
       startAcceleration = gyro;
       triggerX = width / 2;
       triggerY = height / 2;
     }
 
-    triggerX = ((gyro[0] - startAcceleration[0]) * 100 + width / 2);
-    triggerY = ((gyro[1] - startAcceleration[1]) * 100 + height / 2);
-    if (triggerX <= 2*circle.size.x) {
-        triggerX = 6*circle.size.x;
-    } else if (triggerX >= width - 2*circle.size.x) {
-        triggerX = width - 6*circle.size.x;
+    List tal = [
+      startAcceleration[0] - gyro[0],
+      startAcceleration[1] - gyro[1],
+      startAcceleration[2] - gyro[2]
+    ];
+    // textb.text = tal.toString();
+    textb.text = ((width / 1333.333).toString());
+
+    triggerX =
+        ((gyro[0] - startAcceleration[0]) * (width / 13.333) + width / 2);
+    triggerY =
+        ((gyro[1] - startAcceleration[1]) * (height / (188 / 25)) + height / 2);
+    if (triggerX <= 2 * circle.size.x) {
+      triggerX = 6 * circle.size.x;
+    } else if (triggerX >= width - 2 * circle.size.x) {
+      triggerX = width - 6 * circle.size.x;
     }
 
-    if (triggerY <= 2*circle.size.y) {
-        triggerY = 6*circle.size.y;
-    } else if (triggerY >= height - 2*circle.size.y) {
-        triggerY = height - 6*circle.size.y;
+    if (triggerY <= 2 * circle.size.y) {
+      triggerY = 6 * circle.size.y;
+    } else if (triggerY >= height - 2 * circle.size.y) {
+      triggerY = height - 6 * circle.size.y;
     }
 
-  //   try {
-  //     if (triggerX > 2*circle.size.x && triggerX < width - 2*circle.size.x) {
-  //       triggerX = ((gyro[0] - startAcceleration[0]) * 100 + width / 2);
-  //     } else if (triggerX <= 2*circle.size.x) {
-  //       triggerX = 6*circle.size.x;
-  //     } else if (triggerX >= width - 2*circle.size.x) {
-  //       triggerX = width - 6*circle.size.x;
-  //     }
+    //   try {
+    //     if (triggerX > 2*circle.size.x && triggerX < width - 2*circle.size.x) {
+    //       triggerX = ((gyro[0] - startAcceleration[0]) * 100 + width / 2);
+    //     } else if (triggerX <= 2*circle.size.x) {
+    //       triggerX = 6*circle.size.x;
+    //     } else if (triggerX >= width - 2*circle.size.x) {
+    //       triggerX = width - 6*circle.size.x;
+    //     }
 
-  //     if (triggerY > 2*circle.size.y && triggerY < height - 2*circle.size.y) {
-  //       triggerY = ((gyro[1] - startAcceleration[1]) * 100 + height / 2);
-  //     } else if (triggerY <= 2*circle.size.y) {
-  //       triggerY = 6*circle.size.y;
-  //     } else if (triggerY >= height - 2*circle.size.y) {
-  //       triggerY = height - 6*circle.size.y;
-  //     }
-  //   } catch (e) {
-  //     print(e);
-  //     // todo: fuck der det her en god cowboy løsning
-  //   }
+    //     if (triggerY > 2*circle.size.y && triggerY < height - 2*circle.size.y) {
+    //       triggerY = ((gyro[1] - startAcceleration[1]) * 100 + height / 2);
+    //     } else if (triggerY <= 2*circle.size.y) {
+    //       triggerY = 6*circle.size.y;
+    //     } else if (triggerY >= height - 2*circle.size.y) {
+    //       triggerY = height - 6*circle.size.y;
+    //     }
+    //   } catch (e) {
+    //     print(e);
+    //     // todo: fuck der det her en god cowboy løsning
+    //   }
 
     circle.position.x = triggerX;
     circle.position.y = triggerY;
@@ -255,14 +312,13 @@ class BallGame extends FlameGame with HasTappables {
             (triggerY < triggerList[i][j][1] &&
                 triggerY > triggerList[i][j][1] - (height / 3))) {
           // textb.text = '${triggerList[i][j][2]} && ${triggerList[i][j][3]}';
-          background.position.x -= triggerList[i][j][2]*3;
-          background.position.y -= triggerList[i][j][3]*3;
+          background.position.x -= triggerList[i][j][2] * 3 * (width / 1333.3);
+          background.position.y -= triggerList[i][j][3] * 3 * (height / 752);
         }
       }
     }
   }
 }
-
 
 class RecalibrateButton extends SpriteComponent with Tappable {
   @override
