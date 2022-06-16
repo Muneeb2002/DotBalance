@@ -14,6 +14,7 @@ import 'package:flutter/services.dart';
 // import 'package:flutter_sensors/flutter_sensors.dart';
 // import 'package:sensors/sensors.dart';
 import 'package:motion_sensors/motion_sensors.dart';
+import 'package:stack/stack.dart' as stack;
 import 'dart:async';
 
 // import
@@ -43,12 +44,12 @@ List startAcceleration = [0, 0, 0];
 double width = 0;
 double height = 0;
 
-double gridCellSize = 1;
-int gridSize = 50;
+double gridCellSize = 50;
+int gridSize = 20;
 List<Wall> walls = [];
 
 List<List<List<int>>> grid = List.generate(gridSize,
-    (_) => List.generate(gridSize, (_) => List.generate(5, (_) => 0)));
+    (_) => List.generate(gridSize, (_) => List.generate(6, (_) => 0)));
 
 var triggerList = List.generate(
     3, (_) => List.generate(3, (_) => List.generate(4, (_) => 0.0)));
@@ -109,6 +110,8 @@ class BallGame extends FlameGame with HasTappables {
   // var triggerList = List<List<Vector4>>;
   RecalibrateButton recalibrateButton = RecalibrateButton();
   Color backgroundColor() => Colors.orange;
+  stack.Stack<Vector2> carvableWalls = stack.Stack<Vector2>();
+  stack.Stack<Vector2> cWalls = stack.Stack<Vector2>();
 
   @override
   Future<void> onLoad() async {
@@ -122,7 +125,8 @@ class BallGame extends FlameGame with HasTappables {
     loadPictures();
 
     createGrid();
-    createMaze();
+    createMaze(Vector2(0, 0));
+    drawMaze();
 
     add(circle);
     double middelx = size[0] / 2;
@@ -160,21 +164,117 @@ class BallGame extends FlameGame with HasTappables {
         for (int k = 0; k < 4; k++) {
           grid[i][j][k] = 1;
         }
-        if (i == 0) {
-          grid[i][j][0] = 0;
-        }
-        if (i == gridSize - 1) {
-          grid[i][j][2] = 0;
-        }
-        if (j == 0) {
-          grid[i][j][3] = 0;
-        }
-        if (j == gridSize - 1) {
-          grid[i][j][1] = 0;
-        }
+
       }
     }
+  }
 
+  void createMaze(Vector2 position) {
+    //metoden til at lave labyrinten er rekursiv backtracking
+    //Følgende kode er lavet taget løst ud fra følgende link: http://weblog.jamisbuck.org/2010/12/27/maze-generation-recursive-backtracking
+    grid[position[0].toInt()][position[1].toInt()][4] = 1;
+    Vector2 N = Vector2(0, -1),
+        S = Vector2(0, 1),
+        E = Vector2(1, 0),
+        W = Vector2(-1, 0);
+
+    List directions = [N, S, E, W];
+    directions.shuffle();
+
+    for (int i = 0; i < directions.length; i++) {
+      Vector2 newPosition = position + directions[i];
+      if(newPosition[0] >=0 && newPosition[0] < gridSize && newPosition[1] >=0 && newPosition[1] < gridSize && grid[newPosition[0].toInt()][newPosition[1].toInt()][4] == 0) {
+        if(directions[i] == N){
+          grid[position[0].toInt()][position[1].toInt()][0] = 0;
+          grid[newPosition[0].toInt()][newPosition[1].toInt()][2] = 0;
+        } else if(directions[i] == S){
+          grid[position[0].toInt()][position[1].toInt()][2] = 0;
+          grid[newPosition[0].toInt()][newPosition[1].toInt()][0] = 0;
+        } else if(directions[i] == E){
+          grid[position[0].toInt()][position[1].toInt()][1] = 0;
+          grid[newPosition[0].toInt()][newPosition[1].toInt()][3] = 0;
+        } else if(directions[i] == W){
+          grid[position[0].toInt()][position[1].toInt()][3] = 0;
+          grid[newPosition[0].toInt()][newPosition[1].toInt()][1] = 0;
+        }
+        createMaze(newPosition);
+      }
+    }
+  }
+
+
+  // void createMaze(Vector2 position) {
+  //   grid[position[0].toInt()][position[1].toInt()][4] = 1;
+
+  //   Wall N, E, S, W;
+
+  //   List availableDirections = [];
+
+  //   if (position[0] != 0) {
+  //     if (grid[position[0].toInt() - 1][position[1].toInt()][4] == 0) {
+  //       availableDirections.add(Vector2(position[0] - 1, position[1]));
+  //     }
+  //   }
+  //   if (position[0] != gridSize - 1) {
+  //     if (grid[position[0].toInt() + 1][position[1].toInt()][4] == 0) {
+  //       availableDirections.add(Vector2(position[0] + 1, position[1]));
+  //     }
+  //   }
+  //   if (position[1] != 0) {
+  //     if (grid[position[0].toInt()][position[1].toInt() - 1][4] == 0) {
+  //       availableDirections.add(Vector2(position[0], position[1] - 1));
+  //     }
+  //   }
+  //   if (position[1] != gridSize - 1) {
+  //     if (grid[position[0].toInt()][position[1].toInt() + 1][4] == 0) {
+  //       availableDirections.add(Vector2(position[0], position[1] + 1));
+  //     }
+  //   }
+
+  //   availableDirections.shuffle();
+
+  //   if (availableDirections.isEmpty) {
+  //     // print("id ont knowef sdfsdf");
+  //     if (carvableWalls.isNotEmpty) {
+  //       createMaze(carvableWalls.pop());
+  //       return;
+  //     }
+  //     return;
+  //   }
+
+  //   for (int i = 0; i < availableDirections.length; i++) {
+  //     carvableWalls
+  //         .push(Vector2(availableDirections[i][0], availableDirections[i][1]));
+  //   }
+
+  //   if (carvableWalls.isEmpty) {
+  //     return;
+  //   } else {
+  //     // carvableWalls.print();
+  //     Vector2 nextCell = carvableWalls.top();
+  //     print("${nextCell[0]} ${nextCell[1]}");
+  //     Vector2 diff =
+  //         Vector2(nextCell[0] - position[0], nextCell[1] - position[1]);
+  //     // if (grid[nextCell[0].toInt()][nextCell[1].toInt()][4] == 0) {
+  //     if (diff[0] > 0) {
+  //       grid[position[0].toInt()][position[1].toInt()][1] = 0;
+  //       grid[nextCell[0].toInt()][nextCell[1].toInt()][3] = 0;
+  //     } else if (diff[0] < 0) {
+  //       grid[position[0].toInt()][position[1].toInt()][3] = 0;
+  //       grid[nextCell[0].toInt()][nextCell[1].toInt()][1] = 0;
+  //     } else if (diff[1] > 0) {
+  //       grid[position[0].toInt()][position[1].toInt()][2] = 0;
+  //       grid[nextCell[0].toInt()][nextCell[1].toInt()][0] = 0;
+  //     } else if (diff[1] < 0) {
+  //       grid[position[0].toInt()][position[1].toInt()][0] = 0;
+  //       grid[nextCell[0].toInt()][nextCell[1].toInt()][2] = 0;
+  //     }
+  //     // }
+  //     createMaze(nextCell);
+  //   }
+  // }
+
+  void drawMaze() {
     for (int i = 0; i < gridSize; i++) {
       for (int j = 0; j < gridSize; j++) {
         for (int k = 0; k < 4; k++) {
@@ -182,13 +282,23 @@ class BallGame extends FlameGame with HasTappables {
               (k == 2 && grid[i][j][2] == 1)) {
             Vector2 size = Vector2(gridCellSize, 5);
             Vector2 position = Vector2(i * gridCellSize, j * gridCellSize);
+            if (k == 2) {
+              position =
+                  Vector2(i * gridCellSize, j * gridCellSize + gridCellSize);
+            }
+
             Anchor anchor = Anchor.centerLeft;
             walls.add(Wall(size: size, position: position, anchor: anchor));
           }
           if ((k == 1 && grid[i][j][1] == 1) ||
               (k == 3 && grid[i][j][3] == 1)) {
             Vector2 size = Vector2(5, gridCellSize);
+
             Vector2 position = Vector2(i * gridCellSize, j * gridCellSize);
+            if (k == 1) {
+              position =
+                  Vector2(i * gridCellSize + gridCellSize, j * gridCellSize);
+            }
             Anchor anchor = Anchor.topCenter;
             walls.add(Wall(size: size, position: position, anchor: anchor));
           }
@@ -197,10 +307,10 @@ class BallGame extends FlameGame with HasTappables {
     }
     for (int i = 0; i < walls.length; i++) {
       add(walls[i]);
+      walls[i].position.x += 20;
+      walls[i].position.y += 20;
     }
   }
-
-  void createMaze() {}
 
   void triggerListInit() {
     for (int i = 1; i <= 3; i++) {
@@ -233,8 +343,8 @@ class BallGame extends FlameGame with HasTappables {
   void loadPictures() async {
     background = SpriteComponent()
       ..sprite = await loadSprite('test.png')
-      ..size = Vector2(width / 0.3333, height / (47 / 250))
-      // ..size = Vector2(0.3333, (47 / 250))
+      // ..size = Vector2(width / 0.3333, height / (47 / 250))
+      ..size = Vector2(0.3333, (47 / 250))
       ..anchor = Anchor.center
       ..position = Vector2(width / 2, height / 2);
 
@@ -334,6 +444,10 @@ class BallGame extends FlameGame with HasTappables {
           // textb.text = '${triggerList[i][j][2]} && ${triggerList[i][j][3]}';
           background.position.x -= triggerList[i][j][2] * 3 * (width / 1333.3);
           background.position.y -= triggerList[i][j][3] * 3 * (height / 752);
+          // for (int k = 0; k < walls.length; k++) {
+          //   walls[k].position.x -= triggerList[i][j][2] * 3 * (width / 1333.3);
+          //   walls[k].position.y -= triggerList[i][j][3] * 3 * (height / 752);
+          // }
         }
       }
     }

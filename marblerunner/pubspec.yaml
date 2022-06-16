@@ -40,6 +40,7 @@ dependencies:
 
   flame: ^1.2.0 #game engine
   image: ^2.1.14
+  stack: ^0.2.1
 
   #ekstra fillers
   # firebase_auth: ^3.3.19
