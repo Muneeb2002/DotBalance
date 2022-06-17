@@ -46,10 +46,11 @@ List startAcceleration = [0, 0, 0];
 double width = 0;
 double height = 0;
 
-double gridCellSize = 10;
+double gridCellSize = 150;
 int gridSize = 20;
 List<Wall> walls = [];
 Player player = Player();
+Vector2 vel = Vector2(0, 0);
 
 List<List<List<int>>> grid = List.generate(gridSize,
     (_) => List.generate(gridSize, (_) => List.generate(6, (_) => 0)));
@@ -104,7 +105,7 @@ class Accelerometer extends _HomeWidgetState {
     //   ballGame.move([event.x, event.y, event.z]);
     // });
     motionSensors.accelerometerUpdateInterval =
-        Duration.microsecondsPerSecond ~/ 60;
+        Duration.microsecondsPerSecond ~/ 30;
     motionSensors.accelerometer.listen((AccelerometerEvent event) {
       ballGame.move([event.y, event.x, event.z]);
     });
@@ -115,8 +116,11 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
   // var triggerList = List<List<Vector4>>;
   RecalibrateButton recalibrateButton = RecalibrateButton();
   Color backgroundColor() => Colors.orange;
-  Vector2 vel = Vector2(0, 0);
-  bool stopmoving = true;
+
+  bool stopmovingUp = false,
+      stopmovingDown = false,
+      stopmovingLeft = false,
+      stopmovingRight = false;
 
   @override
   Future<void> onLoad() async {
@@ -253,8 +257,6 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
       }
     }
 
-    
-
     for (int i = 0; i < walls.length; i++) {
       add(walls[i]);
       walls[i].position.x += 20;
@@ -346,10 +348,26 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
     circle.position.x = triggerX;
     circle.position.y = triggerY;
 
-    // print(vel);
+    // player.onCollisionStartCallback();
+
+    print(
+        "$stopmovingDown   $stopmovingUp   $stopmovingLeft   $stopmovingRight");
+
+    if (vel.y > 0 && stopmovingDown) {
+      vel.y = 0;
+    }
+    if (vel.y < 0 && stopmovingUp) {
+      vel.y = 0;
+    }
+    if (vel.x < 0 && stopmovingLeft) {
+      vel.x = 0;
+    }
+    if (vel[0] > 0 && stopmovingRight) {
+      vel.x = 0;
+    }
+
     for (int i = 0; i < walls.length; i++) {
-      walls[i].position.x -= vel.x;
-      walls[i].position.y -= vel.y;
+      walls[i].position -= vel;
     }
 
     for (int i = 0; i < 3; i++) {
@@ -363,8 +381,8 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
           //     triggerList[i][j][2] * 1 * (width / 1333.3);
           // walls[k].position.y -= triggerList[i][j][3] * 1 * (height / 752);
 
-          vel = Vector2(triggerList[i][j][2] * 0.5 * (width / 1333.3),
-              triggerList[i][j][3] * 0.5 * (height / 752));
+          vel = Vector2(triggerList[i][j][2] * 4 * (width / 1333.3),
+              triggerList[i][j][3] * 4 * (height / 752));
           // walls[k].position -= vel;
           // }
           // break;
@@ -398,7 +416,7 @@ class Wall extends RectangleComponent with CollisionCallbacks {
 
 class Player extends CircleComponent with CollisionCallbacks {
   Player() {
-    radius = 30;
+    radius = 1333.333 / 44.44443333;
     position = Vector2(width / 2, height / 2);
     anchor = Anchor.center;
     this.paint = BasicPalette.green.paint()..style = PaintingStyle.fill;
@@ -408,74 +426,34 @@ class Player extends CircleComponent with CollisionCallbacks {
   @override
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     super.onCollision(intersectionPoints, other);
-    // print("suck ma balls");
-    // print(ballGame.vel);
-    // print(ballGame.vel);
-    // print("sdfs ${Vector2(ballGame.vel[0] * -2, ballGame.vel[1] * -2)}");
-
-    Vector2 backlash = Vector2(0, 0);
     Vector2 posDiff = Vector2((intersectionPoints.first.x - position.x).abs(),
         (intersectionPoints.first.y - position.y).abs());
-
     if (position.x < intersectionPoints.first.x && posDiff[0] > posDiff[1]) {
       // right
-      backlash = Vector2(-1, 0);
-    } else if (position.x > intersectionPoints.first.x &&
-        posDiff[0] > posDiff[1]) {
-      // left
-      backlash = Vector2(1, 0);
-    } else if (position.y > intersectionPoints.first.y &&
-        posDiff[0] < posDiff[1]) {
-      //up
-      backlash = Vector2(0, 1);
-    } else if (position.y < intersectionPoints.first.y &&
-        posDiff[0] < posDiff[1]) {
-      //down
-      backlash = Vector2(0, -1);
+      // backlash = Vector2(-1, 0);
+      ballGame.stopmovingRight = true;
     }
+    if (position.x > intersectionPoints.first.x && posDiff[0] > posDiff[1]) {
+      // left
+      // backlash = Vector2(1, 0);
+      ballGame.stopmovingLeft = true;
+    }
+    if (position.y > intersectionPoints.first.y && posDiff[0] < posDiff[1]) {
+      //up
+      // backlash = Vector2(0, 1);
+      ballGame.stopmovingUp = true;
+    }
+    if (position.y < intersectionPoints.first.y && posDiff[0] < posDiff[1]) {
+      //down
+      // backlash = Vector2(0, -1);
+      ballGame.stopmovingDown = true;
+    }
+  }
 
-    // for(int i = 0; i< walls.length; i++){
-    //   walls[i].position -= Vector2(ballGame.vel.x*backlash.x, ballGame.vel.y * backlash.y)*10;
-    // }
-    ballGame.vel = Vector2(
-        ballGame.vel.x * backlash.x * 10, ballGame.vel.y * backlash.y * 10);
-
-    // Vector2 backlash = Vector2(0, 0);
-    // Vector2 posDiff = position - intersectionPoints.first;
-    // if (position.x < intersectionPoints.first.x && posDiff[0] > posDiff[1]) {
-    //   backlash.x = -1;
-    //   print("right");
-    // } else if (position.y > intersectionPoints.first.y &&
-    //     posDiff[1] > posDiff[0]) {
-    //   backlash.y = 1;
-    //   print("up");
-    // } else if (intersectionPoints.first.x < position.x &&
-    //     posDiff[0] < posDiff[1]) {
-    //   print("left");
-    //   backlash.x = 1;
-    // } else if (intersectionPoints.first.y < position.y &&
-    //     posDiff[1] < posDiff[0]) {
-    //   backlash.y = -1;
-    //   print("down");
-    // }
-    // for (int i = 0; i < walls.length; i++) {
-    //   walls[i].position += backlash;
-    // }
-
-    // Vector2 v = intersectionPoints.first;
-    // double angle = v.angleTo(ballGame.vel);
-    // if (angle > pi / 4 && angle < 3 * pi / 4) {
-    //   for (int i = 0; i < walls.length; i++) {
-    //     // walls[i].position -=
-    //     //     Vector2(ballGame.vel[0] * backlash, ballGame.vel[1] * -backlash);
-    //     walls[i].position -= Vector2(2, 0);
-    //   }
-    // } else {
-    //   for (int i = 0; i < walls.length; i++) {
-    //     walls[i].position -=
-    //         Vector2(ballGame.vel[0] * -backlash, ballGame.vel[1] * backlash);
-    //   }
-    // }
-    // player.position += Vector2(ballGame.vel[0]*-30, ballGame.vel[1]*-30);
+  void onCollisionEnd(PositionComponent other) {
+    ballGame.stopmovingRight = false;
+    ballGame.stopmovingLeft = false;
+    ballGame.stopmovingUp = false;
+    ballGame.stopmovingDown = false;
   }
 }
