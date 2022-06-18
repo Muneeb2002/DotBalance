@@ -19,6 +19,11 @@ import 'package:stack/stack.dart' as stack;
 import 'dart:async';
 import 'dart:math';
 
+//packgage filer
+import 'traps.dart';
+import 'Wall.dart';
+import 'Player.dart';
+
 // import
 
 BallGame ballGame = BallGame();
@@ -437,71 +442,7 @@ class RecalibrateButton extends SpriteComponent with Tappable {
   }
 }
 
-class Wall extends RectangleComponent with CollisionCallbacks {
-  Wall(Vector2 position, Vector2 size, Anchor anchor) {
-    this.position = position;
-    this.size = size;
-    this.anchor = anchor;
-    var paint1 = BasicPalette.blue.paint()..style = PaintingStyle.fill;
 
-    var hitbox = RectangleHitbox()
-      ..paint = paint1
-      ..renderShape = true;
-    add(hitbox);
-  }
-}
 
-class Player extends CircleComponent with CollisionCallbacks {
-  Player() {
-    radius = 1333.333 / 44.44443333;
-    position = Vector2(width / 2, height / 2);
-    anchor = Anchor.center;
-    this.paint = BasicPalette.green.paint()..style = PaintingStyle.fill;
-    add(CircleHitbox());
-  }
 
-  @override
-  void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
-    super.onCollision(intersectionPoints, other);
-    Vector2 posDiff = Vector2((intersectionPoints.first.x - position.x).abs(),
-        (intersectionPoints.first.y - position.y).abs());
-    if (position.x < intersectionPoints.first.x && posDiff[0] > posDiff[1]) {
-      // right
-      // backlash = Vector2(-1, 0);
-      ballGame.stopmovingRight = true;
-    }
-    if (position.x > intersectionPoints.first.x && posDiff[0] > posDiff[1]) {
-      // left
-      // backlash = Vector2(1, 0);
-      ballGame.stopmovingLeft = true;
-    }
-    if (position.y > intersectionPoints.first.y && posDiff[0] < posDiff[1]) {
-      //up
-      // backlash = Vector2(0, 1);
-      ballGame.stopmovingUp = true;
-    }
-    if (position.y < intersectionPoints.first.y && posDiff[0] < posDiff[1]) {
-      //down
-      // backlash = Vector2(0, -1);
-      ballGame.stopmovingDown = true;
-    }
-  }
 
-  void onCollisionEnd(PositionComponent other) {
-    ballGame.stopmovingRight = false;
-    ballGame.stopmovingLeft = false;
-    ballGame.stopmovingUp = false;
-    ballGame.stopmovingDown = false;
-  }
-}
-
-class Traps extends CircleComponent with CollisionCallbacks {
-  Traps({position}) {
-    radius = gridCellSize / 2 - gridCellSize / 9;
-    this.position =
-        Vector2(position[0] + gridCellSize / 2, position[1] + gridCellSize / 2);
-    anchor = Anchor.center;
-    this.paint = BasicPalette.black.paint()..style = PaintingStyle.fill;
-    add(CircleHitbox());
-  }
-}
