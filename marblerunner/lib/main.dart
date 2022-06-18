@@ -46,8 +46,8 @@ List startAcceleration = [0, 0, 0];
 double width = 0;
 double height = 0;
 
-double gridCellSize = 150;
-int gridSize = 20;
+double gridCellSize = 30; //150
+int gridSize = 10;
 List<Wall> walls = [];
 Player player = Player();
 Vector2 vel = Vector2(0, 0);
@@ -136,6 +136,8 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
     createGrid();
     createMaze(Vector2(0, 0));
     drawMaze();
+    createTraps();
+    // drawTraps();
 
     player.position = Vector2(width / 2, height / 2);
     add(player);
@@ -188,7 +190,7 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
         E = Vector2(1, 0),
         W = Vector2(-1, 0);
 
-    List directions = [N, S, E, W];
+    List directions = [N, E, S, W];
     directions.shuffle();
 
     for (int i = 0; i < directions.length; i++) {
@@ -259,9 +261,51 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
 
     for (int i = 0; i < walls.length; i++) {
       add(walls[i]);
-      walls[i].position.x += 20;
-      walls[i].position.y += 20;
     }
+  }
+
+  void createTraps() {
+    getSolution(
+      Vector2(gridSize - 1, gridSize - 1),
+    );
+    grid[0][0][5] = 1;
+    for (int i = 0; i < gridSize; i++) {
+      for (int j = 0; j < gridSize; j++) {
+        if (grid[i][j][5] == 0 ) {
+          if(Random().nextInt(10) == 1 ){
+          add(Traps(position: Vector2(i * gridCellSize, j * gridCellSize)));
+        }
+        }
+      }
+    }
+  }
+
+  bool getSolution(Vector2 position) {
+    grid[position[0].toInt()][position[1].toInt()][4] = 0;
+    if (position == Vector2(0, 0)) {
+      return true;
+    }
+    Vector2 N = Vector2(0, -1),
+        S = Vector2(0, 1),
+        E = Vector2(1, 0),
+        W = Vector2(-1, 0);
+    List directions = [N, E, S, W];
+    for (int i = 0; i < directions.length; i++) {
+      Vector2 newPosition = position + directions[i];
+
+      if (newPosition[0] >= 0 &&
+          newPosition[0] < gridSize &&
+          newPosition[1] >= 0 &&
+          newPosition[1] < gridSize &&
+          grid[position[0].toInt()][position[1].toInt()][i] == 0 &&
+          grid[newPosition[0].toInt()][newPosition[1].toInt()][4] == 1) {
+        if (getSolution(newPosition)) {
+          grid[position[0].toInt()][position[1].toInt()][5] = 1;
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   void triggerListInit() {
@@ -283,13 +327,6 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
             anchor: Anchor.center));
       }
     }
-    // print(triggerList);
-    // add(CircleComponent(
-    //         radius: 20,
-    //         position: Vector2(0,0),
-    //         paint: paint,
-    //         anchor: Anchor.center));
-    //   }
   }
 
   void loadPictures() async {}
@@ -350,8 +387,8 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
 
     // player.onCollisionStartCallback();
 
-    print(
-        "$stopmovingDown   $stopmovingUp   $stopmovingLeft   $stopmovingRight");
+    // print(
+    //     "$stopmovingDown   $stopmovingUp   $stopmovingLeft   $stopmovingRight");
 
     if (vel.y > 0 && stopmovingDown) {
       vel.y = 0;
@@ -455,5 +492,16 @@ class Player extends CircleComponent with CollisionCallbacks {
     ballGame.stopmovingLeft = false;
     ballGame.stopmovingUp = false;
     ballGame.stopmovingDown = false;
+  }
+}
+
+class Traps extends CircleComponent with CollisionCallbacks {
+  Traps({position}) {
+    radius = gridCellSize / 2 - gridCellSize / 9;
+    this.position =
+        Vector2(position[0] + gridCellSize / 2, position[1] + gridCellSize / 2);
+    anchor = Anchor.center;
+    this.paint = BasicPalette.black.paint()..style = PaintingStyle.fill;
+    add(CircleHitbox());
   }
 }
