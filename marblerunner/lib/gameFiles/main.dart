@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
@@ -15,7 +17,7 @@ import 'package:flutter/services.dart';
 // import 'package:flutter_sensors/flutter_sensors.dart';
 // import 'package:sensors/sensors.dart';
 import 'package:motion_sensors/motion_sensors.dart';
-import 'package:stack/stack.dart' as stack;
+
 import 'dart:async';
 import 'dart:math';
 
@@ -23,6 +25,7 @@ import 'dart:math';
 import 'traps.dart';
 import 'Wall.dart';
 import 'Player.dart';
+import 'EndGoal.dart';
 
 // import
 
@@ -41,24 +44,24 @@ SpriteComponent background = SpriteComponent();
 
 TextBoxComponent textb = TextBoxComponent();
 
-double triggerX = 0, triggerY = 0;
+// double triggerX = 0, triggerY = 0;
 
-bool recalibrate = true;
-//TODO : skal sættes til true igen;
+// bool recalibrate = true;
+// //TODO : skal sættes til true igen;
 
-List startAcceleration = [0, 0, 0];
+// List startAcceleration = [0, 0, 0];
 
 double width = 0;
 double height = 0;
 
-double gridCellSize = 30; //150
-int gridSize = 10;
-List<Wall> walls = [];
+// double gridCellSize = 150; //150
+// int gridSize = 20;
+// List<Wall> walls = [];
 Player player = Player();
 Vector2 vel = Vector2(0, 0);
 
-List<List<List<int>>> grid = List.generate(gridSize,
-    (_) => List.generate(gridSize, (_) => List.generate(6, (_) => 0)));
+// List<List<List<int>>> grid = List.generate(gridSize,
+//     (_) => List.generate(gridSize, (_) => List.generate(6, (_) => 0)));
 
 var triggerList = List.generate(
     3, (_) => List.generate(3, (_) => List.generate(4, (_) => 0.0)));
@@ -120,12 +123,31 @@ class Accelerometer extends _HomeWidgetState {
 class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
   // var triggerList = List<List<Vector4>>;
   RecalibrateButton recalibrateButton = RecalibrateButton();
-  Color backgroundColor() => Colors.orange;
+  Color backgroundColor() => Colors.white;
+
+  double triggerX = 0, triggerY = 0;
+
+  // Player player = Player();
+  // Vector2 vel = Vector2(0, 0);
+
+  bool recalibrate = true;
+//TODO : skal sættes til true igen;
+
+  List startAcceleration = [0, 0, 0];
 
   bool stopmovingUp = false,
       stopmovingDown = false,
       stopmovingLeft = false,
       stopmovingRight = false;
+
+  double gridCellSize = 150; //150
+  int gridSize = 20;
+  List<Wall> walls = [];
+
+  List<List<List<int>>> grid = [];
+
+  // var triggerList = [List.generate(
+  //     3, (_) => List.generate(3, (_) => List.generate(4, (_) => 0.0)))];
 
   @override
   Future<void> onLoad() async {
@@ -142,9 +164,7 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
     createMaze(Vector2(0, 0));
     drawMaze();
     createTraps();
-    // drawTraps();
-
-    player.position = Vector2(width / 2, height / 2);
+    createEndGoal();
     add(player);
 
     add(circle);
@@ -153,6 +173,7 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
 
     circle.position = Vector2(middelx, middely);
     circle.size = Vector2(width / 66.667, height / (188 / 5));
+    circle.positionType = PositionType.viewport;
 
     triggerX = width / 2;
     triggerY = height / 2;
@@ -162,21 +183,29 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
     textb.text = "test2";
 
     textb.position = Vector2(width / 2, 2 * height / 6);
+    textb.textRenderer =
+        TextPaint(style: TextStyle(color: BasicPalette.black.color));
     textb.size = Vector2(width / 3.333, height / (47 / 25));
-
+    textb.positionType = PositionType.viewport;
+    
     add(textb);
 
     recalibrateButton
       ..sprite = await loadSprite('ball.png')
       ..size = Vector2(width / 26.666, height / (376 / 25))
       ..position = Vector2(
-          width - recalibrateButton.size.x, height - recalibrateButton.size.y);
+          width - recalibrateButton.size.x, height - recalibrateButton.size.y)
+      ..positionType = PositionType.viewport;
+
     add(recalibrateButton);
 
+    camera.followComponent(player);
     Accelerometer().initState();
   }
 
   void createGrid() {
+    grid = List.generate(gridSize,
+        (_) => List.generate(gridSize, (_) => List.generate(6, (_) => 0)));
     for (int i = 0; i < gridSize; i++) {
       for (int j = 0; j < gridSize; j++) {
         for (int k = 0; k < 4; k++) {
@@ -276,10 +305,10 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
     grid[0][0][5] = 1;
     for (int i = 0; i < gridSize; i++) {
       for (int j = 0; j < gridSize; j++) {
-        if (grid[i][j][5] == 0 ) {
-          if(Random().nextInt(10) == 1 ){
-          add(Traps(position: Vector2(i * gridCellSize, j * gridCellSize)));
-        }
+        if (grid[i][j][5] == 0) {
+          if (Random().nextInt(1) == 0) {
+            add(Traps(position: Vector2(i * gridCellSize, j * gridCellSize)));
+          }
         }
       }
     }
@@ -313,6 +342,10 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
     return false;
   }
 
+  void createEndGoal() {
+    add(EndGoal());
+  }
+
   void triggerListInit() {
     for (int i = 1; i <= 3; i++) {
       for (int j = 1; j <= 3; j++) {
@@ -325,11 +358,13 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
 
     for (int i = 0; i < 3; i++) {
       for (int j = 0; j < 3; j++) {
-        add(CircleComponent(
+        CircleComponent circle = CircleComponent(
             radius: 20,
             position: Vector2(triggerList[i][j][0], triggerList[i][j][1]),
             paint: paint,
-            anchor: Anchor.center));
+            anchor: Anchor.center);
+        circle.positionType = PositionType.viewport;
+        add(circle);
       }
     }
   }
@@ -352,7 +387,6 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
   void move(List gyro) {
     // print(gyro);
     // List gyro =
-
     if (recalibrate) {
       print("this should be recalibrated");
       recalibrate = false;
@@ -408,9 +442,10 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
       vel.x = 0;
     }
 
-    for (int i = 0; i < walls.length; i++) {
-      walls[i].position -= vel;
-    }
+    // for (int i = 0; i < walls.length; i++) {
+    //   walls[i].position -= vel;
+    // }
+    player.position += vel;
 
     for (int i = 0; i < 3; i++) {
       for (int j = 0; j < 3; j++) {
@@ -437,12 +472,7 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
 class RecalibrateButton extends SpriteComponent with Tappable {
   @override
   bool onTapDown(TapDownInfo info) {
-    recalibrate = true;
+    ballGame.recalibrate = true;
     return true;
   }
 }
-
-
-
-
-

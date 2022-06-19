@@ -6,11 +6,12 @@ import 'package:flutter/material.dart';
 
 class Traps extends CircleComponent with CollisionCallbacks {
   Traps({position}) {
-    radius = gridCellSize / 2 - gridCellSize / 9;
+    radius = ballGame.gridCellSize / 2 - ballGame.gridCellSize / 5;
     this.position =
-        Vector2(position[0] + gridCellSize / 2, position[1] + gridCellSize / 2);
+        Vector2(position[0] + ballGame.gridCellSize / 2, position[1] + ballGame.gridCellSize / 2);
     anchor = Anchor.center;
     this.paint = BasicPalette.black.paint()..style = PaintingStyle.fill;
+
     add(CircleHitbox());
   }
 }
