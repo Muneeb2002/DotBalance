@@ -63,6 +63,8 @@ Vector2 vel = Vector2(0, 0);
 // List<List<List<int>>> grid = List.generate(gridSize,
 //     (_) => List.generate(gridSize, (_) => List.generate(6, (_) => 0)));
 
+bool newMaze = true;
+
 var triggerList = List.generate(
     5, (_) => List.generate(5, (_) => List.generate(4, (_) => 0.0)));
 
@@ -130,6 +132,8 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
   // Player player = Player();
   // Vector2 vel = Vector2(0, 0);
 
+  Random rand = Random();
+
   bool recalibrate = true;
 //TODO : skal sættes til true igen;
 
@@ -140,7 +144,8 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
       stopmovingLeft = false,
       stopmovingRight = false;
 
-  double gridCellSize = 1333.333/8.888867; //150
+  double gridCellSize = 1333.333 / 8.888867; //150
+  // double gridCellSize = 15;
   int gridSize = 20;
   List<Wall> walls = [];
 
@@ -160,11 +165,7 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
     }
     loadPictures();
 
-    createGrid();
-    createMaze(Vector2(0, 0));
-    drawMaze();
-    createTraps();
-    createEndGoal();
+    startGame();
     add(player);
 
     add(circle);
@@ -187,7 +188,7 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
         TextPaint(style: TextStyle(color: BasicPalette.black.color));
     textb.size = Vector2(width / 3.333, height / (47 / 25));
     textb.positionType = PositionType.viewport;
-    
+
     add(textb);
 
     recalibrateButton
@@ -203,7 +204,23 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
     Accelerometer().initState();
   }
 
+  void startGame() {
+    int x = rand.nextInt(gridSize);
+    int y = rand.nextInt(gridSize);
+    // rand
+    createGrid();
+    createMaze(Vector2(x.toDouble(), y.toDouble()));
+    drawMaze();
+    createTraps();
+    createEndGoal();
+
+    player.position = Vector2(gridCellSize * gridSize - gridCellSize / 2,
+        gridCellSize * gridSize - gridCellSize / 2);
+  }
+
   void createGrid() {
+    grid.clear();
+
     grid = List.generate(gridSize,
         (_) => List.generate(gridSize, (_) => List.generate(6, (_) => 0)));
     for (int i = 0; i < gridSize; i++) {
@@ -226,6 +243,7 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
 
     List directions = [N, E, S, W];
     directions.shuffle();
+    // print("dir ${directions}");
 
     for (int i = 0; i < directions.length; i++) {
       Vector2 newPosition = position + directions[i];
@@ -253,6 +271,11 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
   }
 
   void drawMaze() {
+    for (int i = 0; i < walls.length; i++) {
+      remove(walls[i]);
+    }
+    walls.clear();
+
     for (int i = 0; i < gridSize; i++) {
       for (int j = 0; j < gridSize; j++) {
         for (int k = 0; k < 4; k++) {
@@ -292,7 +315,6 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
         }
       }
     }
-
     for (int i = 0; i < walls.length; i++) {
       add(walls[i]);
     }
@@ -306,9 +328,9 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
     for (int i = 0; i < gridSize; i++) {
       for (int j = 0; j < gridSize; j++) {
         if (grid[i][j][5] == 0) {
-          if (Random().nextInt(10) == 0) {
-            add(Traps(position: Vector2(i * gridCellSize, j * gridCellSize)));
-          }
+          // if (Random().nextInt(10) == 0) {
+          //   add(Traps(position: Vector2(i * gridCellSize, j * gridCellSize)));
+          // }
         }
       }
     }
@@ -374,6 +396,11 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
   @override
   update(double dt) {
     super.update(dt);
+    if (newMaze) {
+      startGame();
+      newMaze = false;
+    }
+    // startGame();
     // print("${walls[0].position.x} +  ${walls[0].position.y}");
     // move();
     // move(getGyro());
@@ -472,7 +499,8 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
 class RecalibrateButton extends SpriteComponent with Tappable {
   @override
   bool onTapDown(TapDownInfo info) {
-    ballGame.recalibrate = true;
+    // ballGame.recalibrate = true;
+    // ballGame.startGame();
     return true;
   }
 }

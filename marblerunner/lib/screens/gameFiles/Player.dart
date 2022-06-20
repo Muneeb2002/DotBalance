@@ -1,4 +1,9 @@
+import 'dart:ffi';
+
+import 'package:flame/game.dart';
+import 'package:marblerunner/screens/gameFiles/traps.dart';
 import 'package:marblerunner/screens/gameFiles/wall.dart';
+import 'package:marblerunner/screens/gameFiles/endGoal.dart';
 
 import 'game.dart';
 import 'package:flame/collisions.dart';
@@ -9,8 +14,9 @@ import 'package:flutter/material.dart';
 class Player extends CircleComponent with CollisionCallbacks {
   Player() {
     radius = 1333.333 / 44.44443333;
-    position = Vector2(ballGame.gridCellSize*ballGame.gridSize - ballGame.gridCellSize / 2,
-      ballGame.gridCellSize * ballGame.gridSize - ballGame.gridCellSize/2);
+    // position = Vector2(
+    //     ballGame.gridCellSize * ballGame.gridSize - ballGame.gridCellSize / 2,
+    //     ballGame.gridCellSize * ballGame.gridSize - ballGame.gridCellSize / 2);
     // position = Vector2(0,0);
     anchor = Anchor.center;
     this.paint = BasicPalette.black.paint()..style = PaintingStyle.fill;
@@ -44,6 +50,15 @@ class Player extends CircleComponent with CollisionCallbacks {
         ballGame.stopmovingDown = true;
       }
     }
+
+    if (other is EndGoal) {
+      // ballGame.startGame();
+      newMaze = true;
+    }
+
+    // if (other is Traps) {
+    //   Navigator
+    // }
   }
 
   void onCollisionEnd(PositionComponent other) {
