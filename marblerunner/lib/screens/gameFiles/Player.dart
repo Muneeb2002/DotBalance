@@ -1,4 +1,3 @@
-import 'dart:ffi';
 
 import 'package:flame/game.dart';
 import 'package:marblerunner/screens/gameFiles/traps.dart';
@@ -19,7 +18,7 @@ class Player extends CircleComponent with CollisionCallbacks {
     //     ballGame.gridCellSize * ballGame.gridSize - ballGame.gridCellSize / 2);
     // position = Vector2(0,0);
     anchor = Anchor.center;
-    this.paint = BasicPalette.black.paint()..style = PaintingStyle.fill;
+    this.paint = BasicPalette.blue.paint()..style = PaintingStyle.fill;
     add(CircleHitbox());
   }
 
@@ -30,9 +29,9 @@ class Player extends CircleComponent with CollisionCallbacks {
       Vector2 posDiff = Vector2((intersectionPoints.first.x - position.x).abs(),
           (intersectionPoints.first.y - position.y).abs());
       if (position.x < intersectionPoints.first.x && posDiff[0] > posDiff[1]) {
+        // tjekker om spilleren rammer en væg til højre
         // right
-        // backlash = Vector2(-1, 0);
-        ballGame.stopmovingRight = true;
+        ballGame.stopmovingRight = true; // stopper at bevæge sig til højre
       }
       if (position.x > intersectionPoints.first.x && posDiff[0] > posDiff[1]) {
         // left
@@ -52,12 +51,11 @@ class Player extends CircleComponent with CollisionCallbacks {
     }
 
     if (other is EndGoal) {
-      // ballGame.startGame();
       newMaze = true;
     }
 
     // if (other is Traps) {
-    //   Navigator
+    //   // ballGame.gameOver();
     // }
   }
 
