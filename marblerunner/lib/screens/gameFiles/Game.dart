@@ -23,9 +23,9 @@ import 'dart:math';
 
 //packgage filer
 import 'traps.dart';
-import 'Wall.dart';
-import 'Player.dart';
-import 'EndGoal.dart';
+import 'wall.dart';
+import 'player.dart';
+import 'endGoal.dart';
 
 // import
 

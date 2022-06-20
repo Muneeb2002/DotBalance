@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:marblerunner/screens/startscreen.dart';
-import 'package:marblerunner/screens/gameFiles/Game.dart';
+import 'package:marblerunner/screens/gameFiles/game.dart';
 import 'package:flutter/services.dart';
 
 // void main() => runApp(MaterialApp(
