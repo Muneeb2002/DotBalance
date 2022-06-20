@@ -66,20 +66,14 @@ Vector2 vel = Vector2(0, 0);
 bool newMaze = true;
 
 var triggerList = List.generate(
-    5, (_) => List.generate(5, (_) => List.generate(4, (_) => 0.0)));
+    5, (_) => List.generate(5, (_) => List.generate(4, (_) => 0.0))); //denne liste laver vores trigger point hvor 
+    //[0] er x koordinaten på skræmen
+    //[1] er y koordinaten på skærmen
+    //[2] er hvilken hastighed bolden skal bevæge sig med i x-retning
+    //[3] er hvilken hastighed bolden skal bevæge sig med i y-retning
 
-// void main() {
-//   WidgetsFlutterBinding.ensureInitialized();
 
-//   SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-//       overlays: [SystemUiOverlay.bottom]);
-//   SystemChrome.setPreferredOrientations([
-//     DeviceOrientation.landscapeLeft,
-//     DeviceOrientation.landscapeRight,
-//   ]).then((value) => runApp(HomeWidget()));
 
-//   // runApp(HomeWidget());
-// }
 
 class HomeWidget extends StatefulWidget {
   const HomeWidget({Key? key}) : super(key: key);
@@ -105,19 +99,10 @@ class Accelerometer extends _HomeWidgetState {
   @override
   void initState() {
     super.initState();
-    // gyroscopeEvents.listen((GyroscopeEvent event) {
-    //   ballGame.move([event.x, event.y, event.z]);
-    // });
-    // userAccelerometerEvents.listen((UserAccelerometerEvent event) {
-    //   ballGame.move([event.x, event.y, event.z]);
-    // });
-    // motionSensors.gyroscope.listen((GyroscopeEvent event) {
-    //   ballGame.move([event.x, event.y, event.z]);
-    // });
     motionSensors.accelerometerUpdateInterval =
-        Duration.microsecondsPerSecond ~/ 30;
+        Duration.microsecondsPerSecond ~/ 30;  //Sætter hvor ofte accelerometer skal opdatere (30 gange i sekundet)
     motionSensors.accelerometer.listen((AccelerometerEvent event) {
-      ballGame.move([event.y, event.x, event.z]);
+      ballGame.move([event.y, event.x, event.z]); //kalder move metoden i BallGame klassen
     });
   }
 }
@@ -132,7 +117,7 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
   // Player player = Player();
   // Vector2 vel = Vector2(0, 0);
 
-  Random rand = Random();
+  // Random rand = Random();
 
   bool recalibrate = true;
 //TODO : skal sættes til true igen;
@@ -144,28 +129,25 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
       stopmovingLeft = false,
       stopmovingRight = false;
 
-  double gridCellSize = 1333.333 / 8.888867; //150
+  double gridCellSize = width / 8.888867; //150
   // double gridCellSize = 15;
   int gridSize = 20;
   List<Wall> walls = [];
 
-  List<List<List<int>>> grid = [];
+  List<List<List<int>>> grid = [];  //initialisere grid med en liste af liste af liste af ints
 
-  // var triggerList = [List.generate(
-  //     3, (_) => List.generate(3, (_) => List.generate(4, (_) => 0.0)))];
 
   @override
   Future<void> onLoad() async {
-    if (size[0] > size[1]) {
+    if (size[0] > size[1]) {  //tager højde for om længden af skærmen er større end højden
       width = size[0];
       height = size[1];
     } else {
       width = size[1];
       height = size[0];
     }
-    loadPictures();
 
-    startGame();
+    startGame(); //kalder startGame metoden (som laver grid, labyrint, traps, sætter player, endGoal)
     add(player);
 
     add(circle);
@@ -200,16 +182,16 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
 
     add(recalibrateButton);
 
-    camera.followComponent(player);
+    camera.followComponent(player);  //sørger for at kameraet følger player componenten
     Accelerometer().initState();
   }
 
   void startGame() {
-    int x = rand.nextInt(gridSize);
-    int y = rand.nextInt(gridSize);
+    // int x = rand.nextInt(gridSize);
+    // int y = rand.nextInt(gridSize);
     // rand
     createGrid();
-    createMaze(Vector2(x.toDouble(), y.toDouble()));
+    createMaze(Vector2(0,0));
     drawMaze();
     createTraps();
     createEndGoal();
