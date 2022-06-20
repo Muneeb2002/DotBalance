@@ -1,4 +1,4 @@
-import 'package:marblerunner/gameFiles/Wall.dart';
+import 'package:marblerunner/screens/gameFiles/Wall.dart';
 
 import 'Game.dart';
 import 'package:flame/collisions.dart';

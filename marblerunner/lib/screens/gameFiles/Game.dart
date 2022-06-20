@@ -66,18 +66,18 @@ Vector2 vel = Vector2(0, 0);
 var triggerList = List.generate(
     5, (_) => List.generate(5, (_) => List.generate(4, (_) => 0.0)));
 
-void main() {
-  WidgetsFlutterBinding.ensureInitialized();
+// void main() {
+//   WidgetsFlutterBinding.ensureInitialized();
 
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-      overlays: [SystemUiOverlay.bottom]);
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.landscapeLeft,
-    DeviceOrientation.landscapeRight,
-  ]).then((value) => runApp(HomeWidget()));
+//   SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+//       overlays: [SystemUiOverlay.bottom]);
+//   SystemChrome.setPreferredOrientations([
+//     DeviceOrientation.landscapeLeft,
+//     DeviceOrientation.landscapeRight,
+//   ]).then((value) => runApp(HomeWidget()));
 
-  // runApp(HomeWidget());
-}
+//   // runApp(HomeWidget());
+// }
 
 class HomeWidget extends StatefulWidget {
   const HomeWidget({Key? key}) : super(key: key);
