@@ -64,7 +64,7 @@ Vector2 vel = Vector2(0, 0);
 //     (_) => List.generate(gridSize, (_) => List.generate(6, (_) => 0)));
 
 var triggerList = List.generate(
-    3, (_) => List.generate(3, (_) => List.generate(4, (_) => 0.0)));
+    5, (_) => List.generate(5, (_) => List.generate(4, (_) => 0.0)));
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -140,7 +140,7 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
       stopmovingLeft = false,
       stopmovingRight = false;
 
-  double gridCellSize = 150; //150
+  double gridCellSize = 1333.333/8.888867; //150
   int gridSize = 20;
   List<Wall> walls = [];
 
@@ -306,7 +306,7 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
     for (int i = 0; i < gridSize; i++) {
       for (int j = 0; j < gridSize; j++) {
         if (grid[i][j][5] == 0) {
-          if (Random().nextInt(1) == 0) {
+          if (Random().nextInt(10) == 0) {
             add(Traps(position: Vector2(i * gridCellSize, j * gridCellSize)));
           }
         }
@@ -347,17 +347,17 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
   }
 
   void triggerListInit() {
-    for (int i = 1; i <= 3; i++) {
-      for (int j = 1; j <= 3; j++) {
-        triggerList[i - 1][j - 1][0] = i * (width / 3);
-        triggerList[i - 1][j - 1][1] = j * (height / 3);
-        triggerList[i - 1][j - 1][2] = -2 + i * 1.0;
-        triggerList[i - 1][j - 1][3] = -2 + j * 1.0;
+    for (int i = 1; i <= 5; i++) {
+      for (int j = 1; j <= 5; j++) {
+        triggerList[i - 1][j - 1][0] = i * (width / 5);
+        triggerList[i - 1][j - 1][1] = j * (height / 5);
+        triggerList[i - 1][j - 1][2] = -3 + i * 1.0;
+        triggerList[i - 1][j - 1][3] = -3 + j * 1.0;
       }
     }
 
-    for (int i = 0; i < 3; i++) {
-      for (int j = 0; j < 3; j++) {
+    for (int i = 0; i < 5; i++) {
+      for (int j = 0; j < 5; j++) {
         CircleComponent circle = CircleComponent(
             radius: 20,
             position: Vector2(triggerList[i][j][0], triggerList[i][j][1]),
@@ -447,12 +447,12 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
     // }
     player.position += vel;
 
-    for (int i = 0; i < 3; i++) {
-      for (int j = 0; j < 3; j++) {
+    for (int i = 0; i < 5; i++) {
+      for (int j = 0; j < 5; j++) {
         if ((triggerX < triggerList[i][j][0] &&
-                triggerX > triggerList[i][j][0] - (width / 3)) &&
+                triggerX > triggerList[i][j][0] - (width / 5)) &&
             (triggerY < triggerList[i][j][1] &&
-                triggerY > triggerList[i][j][1] - (height / 3))) {
+                triggerY > triggerList[i][j][1] - (height / 5))) {
           // for (int k = 0; k < walls.length; k++) {
           // walls[k].position.x -=
           //     triggerList[i][j][2] * 1 * (width / 1333.3);

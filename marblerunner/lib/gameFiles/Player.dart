@@ -1,6 +1,6 @@
 import 'package:marblerunner/gameFiles/Wall.dart';
 
-import 'main.dart';
+import 'Game.dart';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/palette.dart';
