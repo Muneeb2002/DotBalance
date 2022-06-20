@@ -29,7 +29,7 @@ class Player extends CircleComponent with CollisionCallbacks {
     if (other is Wall) {
       Vector2 posDiff = Vector2((intersectionPoints.first.x - position.x).abs(),
           (intersectionPoints.first.y - position.y).abs());
-      if (position.x < intersectionPoints.first.x && posDiff[0] > posDiff[1]) {
+      if (position.x < intersectionPoints.first.x && posDiff[0] > posDiff[1]) {  // tjekker om spilleren rammer en væg til højre
         // right
         // backlash = Vector2(-1, 0);
         ballGame.stopmovingRight = true;
