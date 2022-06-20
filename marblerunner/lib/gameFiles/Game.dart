@@ -23,9 +23,9 @@ import 'dart:math';
 
 //packgage filer
 import 'traps.dart';
-import 'wall.dart';
-import 'player.dart';
-import 'endGoal.dart';
+import 'Wall.dart';
+import 'Player.dart';
+import 'EndGoal.dart';
 
 // import
 
@@ -66,18 +66,18 @@ Vector2 vel = Vector2(0, 0);
 var triggerList = List.generate(
     5, (_) => List.generate(5, (_) => List.generate(4, (_) => 0.0)));
 
-// void main() {
-//   WidgetsFlutterBinding.ensureInitialized();
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
 
-//   SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-//       overlays: [SystemUiOverlay.bottom]);
-//   SystemChrome.setPreferredOrientations([
-//     DeviceOrientation.landscapeLeft,
-//     DeviceOrientation.landscapeRight,
-//   ]).then((value) => runApp(HomeWidget()));
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+      overlays: [SystemUiOverlay.bottom]);
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
+  ]).then((value) => runApp(HomeWidget()));
 
-//   // runApp(HomeWidget());
-// }
+  // runApp(HomeWidget());
+}
 
 class HomeWidget extends StatefulWidget {
   const HomeWidget({Key? key}) : super(key: key);
@@ -121,7 +121,6 @@ class Accelerometer extends _HomeWidgetState {
 }
 
 class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
- 
   // var triggerList = List<List<Vector4>>;
   RecalibrateButton recalibrateButton = RecalibrateButton();
   Color backgroundColor() => Colors.white;
@@ -141,7 +140,7 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
       stopmovingLeft = false,
       stopmovingRight = false;
 
-  double gridCellSize = 1333.333 / 8.888867; //150
+  double gridCellSize = 1333.333/8.888867; //150
   int gridSize = 20;
   List<Wall> walls = [];
 
@@ -188,7 +187,7 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
         TextPaint(style: TextStyle(color: BasicPalette.black.color));
     textb.size = Vector2(width / 3.333, height / (47 / 25));
     textb.positionType = PositionType.viewport;
-
+    
     add(textb);
 
     recalibrateButton
@@ -375,6 +374,9 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
   @override
   update(double dt) {
     super.update(dt);
+    // print("${walls[0].position.x} +  ${walls[0].position.y}");
+    // move();
+    // move(getGyro());
   }
 
   @override
@@ -464,10 +466,6 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
         }
       }
     }
-  }
-
-  void gameOver() {
-    Navigator.pop(context);
   }
 }
 
