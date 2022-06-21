@@ -5,13 +5,6 @@ import 'package:marblerunner/screens/startscreen.dart';
 import 'package:marblerunner/screens/gameFiles/game.dart';
 import 'package:flutter/services.dart';
 
-// void main() => runApp(MaterialApp(
-//       initialRoute: '/',
-//       routes: {
-//         '/': (context) => StartScreen(),
-//         '/game': (context) => GameScreen(),
-//       },
-//     ));
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
