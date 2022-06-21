@@ -316,7 +316,7 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
     for (int i = 0; i < gridSize; i++) {
       for (int j = 0; j < gridSize; j++) {
         if (grid[i][j][5] == 0) {
-          if (Random().nextInt(10) == 1) {
+          if (Random().nextInt(15) == 1) {
             // hvis det er en tilfældigt tal mellem 0 og x så tilføjes en trap
             traps.add(Traps(position: Vector2(i * gridCellSize, j * gridCellSize)));
           }

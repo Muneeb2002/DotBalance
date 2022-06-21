@@ -18,8 +18,8 @@ class Player extends CircleComponent with CollisionCallbacks {
         ballGame.gridCellSize * ballGame.gridSize - ballGame.gridCellSize / 2,
         ballGame.gridCellSize * ballGame.gridSize - ballGame.gridCellSize / 2);
     anchor = Anchor.center;
-    
-    Paint color = Paint()..color =Color.fromRGBO(103, 198, 239, 1);
+
+    Paint color = Paint()..color = Color.fromRGBO(103, 198, 239, 1);
     this.paint = color..style = PaintingStyle.fill;
 
     add(CircleHitbox());
@@ -31,7 +31,8 @@ class Player extends CircleComponent with CollisionCallbacks {
     if (other is Wall) {
       Vector2 posDiff = Vector2((intersectionPoints.first.x - position.x).abs(),
           (intersectionPoints.first.y - position.y).abs());
-      if (position.x < intersectionPoints.first.x && posDiff[0] > posDiff[1]) {  // tjekker om spilleren rammer en væg til højre
+      if (position.x < intersectionPoints.first.x && posDiff[0] > posDiff[1]) {
+        // tjekker om spilleren rammer en væg til højre
         // right
         // backlash = Vector2(-1, 0);
         ballGame.stopmovingRight = true;
@@ -58,9 +59,12 @@ class Player extends CircleComponent with CollisionCallbacks {
       newMaze = true;
     }
 
-    // if (other is Traps) {
-    //   Navigator
-    // }
+    if (other is Traps) {
+      player.position = Vector2(
+          ballGame.gridCellSize * ballGame.gridSize - ballGame.gridCellSize / 2,
+          ballGame.gridCellSize * ballGame.gridSize -
+              ballGame.gridCellSize / 2);
+    }
   }
 
   void onCollisionEnd(PositionComponent other) {
