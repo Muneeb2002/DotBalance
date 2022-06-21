@@ -1,26 +1,11 @@
-import 'dart:ui';
-
-import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
-import 'package:flame/geometry.dart';
 import 'package:flame/input.dart';
-import 'package:flame/palette.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
-// import 'package:sensors_plus/sensors_plus.dart';
-// import 'package:flame/image.dart';
-import 'package:flame/flame.dart';
-import 'package:flame/sprite.dart';
-import 'package:flutter/services.dart';
-// import 'package:flutter_sensors/flutter_sensors.dart';
-// import 'package:sensors/sensors.dart';
 import 'package:motion_sensors/motion_sensors.dart';
-
 import 'dart:async';
 import 'dart:math';
-
 //packgage filer
 import 'traps.dart';
 import 'wall.dart';
@@ -31,37 +16,24 @@ import 'endGoal.dart';
 
 BallGame ballGame = BallGame();
 
-final paint = BasicPalette.red.paint()..style = PaintingStyle.fill;
-final circle = CircleComponent(
-    radius: 200.0,
-    position: Vector2(10, 10),
-    paint: paint,
-    anchor: Anchor.center);
+
 
 TextPaint textPaint = TextPaint();
 
 SpriteComponent background = SpriteComponent();
 
 
-
-// double triggerX = 0, triggerY = 0;
-
 bool recalibrate = true;
-// //TODO : skal sættes til true igen;
 
-// List startAcceleration = [0, 0, 0];
 
 double width = 0;
 double height = 0;
 
-// double gridCellSize = 150; //150
-// int gridSize = 20;
-// List<Wall> walls = [];
+
 Player player = Player();
 Vector2 vel = Vector2(0, 0);
 
-// List<List<List<int>>> grid = List.generate(gridSize,
-//     (_) => List.generate(gridSize, (_) => List.generate(6, (_) => 0)));
+
 
 bool newMaze = false;
 
@@ -76,18 +48,6 @@ var triggerList = List.generate(
 //[2] er hvilken hastighed bolden skal bevæge sig med i x-retning
 //[3] er hvilken hastighed bolden skal bevæge sig med i y-retning
 
-// void main() {
-//   WidgetsFlutterBinding.ensureInitialized();
-
-//   SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-//       overlays: [SystemUiOverlay.bottom]);
-//   SystemChrome.setPreferredOrientations([
-//     DeviceOrientation.landscapeLeft,
-//     DeviceOrientation.landscapeRight,
-//   ]).then((value) => runApp(HomeWidget()));
-
-//   // runApp(HomeWidget());
-// }
 
 class HomeWidget extends StatefulWidget {
   const HomeWidget({Key? key}) : super(key: key);
@@ -124,14 +84,13 @@ class Accelerometer extends _HomeWidgetState {
 }
 
 class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
-  // var triggerList = List<List<Vector4>>;
+
   RecalibrateButton recalibrateButton = RecalibrateButton();
   Color backgroundColor() => Colors.white;
 
   double triggerX = 0, triggerY = 0;
 
-  // Player player = Player();
-  // Vector2 vel = Vector2(0, 0);
+
 
   Random rand = Random();
 
@@ -154,8 +113,6 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
   List<List<List<int>>> grid =
       []; //initialisere grid med en liste af liste af liste af ints
 
-  // var triggerList = [List.generate(
-  //     3, (_) => List.generate(3, (_) => List.generate(4, (_) => 0.0)))];
 
   @override
   Future<void> onLoad() async {
@@ -172,13 +129,7 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
     startGame(); //kalder startGame metoden (som laver grid, labyrint, traps, sætter player, endGoal)
     add(player);
 
-    add(circle);
-    double middelx = size[0] / 2;
-    double middely = size[1] / 2;
-
-    circle.position = Vector2(middelx, middely);
-    circle.size = Vector2(width / 66.667, height / (188 / 5));
-    circle.positionType = PositionType.viewport;
+    
 
     triggerX = width / 2;
     triggerY = height / 2;
@@ -430,17 +381,7 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
       }
     }
 
-    for (int i = 0; i < 5; i++) {
-      for (int j = 0; j < 5; j++) {
-        CircleComponent circle = CircleComponent(
-            radius: 20,
-            position: Vector2(triggerList[i][j][0], triggerList[i][j][1]),
-            paint: paint,
-            anchor: Anchor.center);
-        circle.positionType = PositionType.viewport;
-        add(circle);
-      }
-    }
+
   }
 
   void loadPictures() async {}
@@ -452,10 +393,6 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
       startGame();
       newMaze = false;
     }
-    // startGame();
-    // print("${walls[0].position.x} +  ${walls[0].position.y}");
-    // move();
-    // move(getGyro());
   }
 
   @override
@@ -464,8 +401,7 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
   }
 
   void move(List gyro) {
-    // print(gyro);
-    // List gyro =
+
     if (recalibrate) {
       recalibrate = false;
       startAcceleration = gyro;
@@ -478,21 +414,20 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
     triggerY =
         ((gyro[1] - startAcceleration[1]) * (height / (188 / 25)) + height / 2);
 
-    if (triggerX <= 2 * circle.size.x) {
+    if (triggerX <= 2 * (width / 66.667)) {
       //sørger for triggerne ikke kan gå ud af skærmen
-      triggerX = 6 * circle.size.x;
-    } else if (triggerX >= width - 2 * circle.size.x) {
-      triggerX = width - 6 * circle.size.x;
+      triggerX = 6 * (width / 66.667);
+    } else if (triggerX >= width - 2 * (width / 66.667)) {
+      triggerX = width - 6 * (width / 66.667);
     }
 
-    if (triggerY <= 2 * circle.size.y) {
-      triggerY = 6 * circle.size.y;
-    } else if (triggerY >= height - 2 * circle.size.y) {
-      triggerY = height - 6 * circle.size.y;
+    if (triggerY <= 2 * height/(188/5)) {
+      triggerY = 6 * height/(188/5);
+    } else if (triggerY >= height - 2 * height/(188/5)) {
+      triggerY = height - 6 * height/(188/5);
     }
 
-    circle.position.x = triggerX;
-    circle.position.y = triggerY;
+
 
     if (vel.y > 0 && stopmovingDown) {
       //stop bevægelsen i en specifik retning
@@ -558,8 +493,8 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
 class RecalibrateButton extends SpriteComponent with Tappable {
   @override
   bool onTapDown(TapDownInfo info) {
-    // ballGame.recalibrate = true;
-    newMaze = true;
+    ballGame.recalibrate = true;
+    
     return true;
   }
 }
