@@ -42,7 +42,7 @@ TextPaint textPaint = TextPaint();
 
 SpriteComponent background = SpriteComponent();
 
-TextBoxComponent textb = TextBoxComponent();
+
 
 // double triggerX = 0, triggerY = 0;
 
@@ -113,15 +113,6 @@ class Accelerometer extends _HomeWidgetState {
   @override
   void initState() {
     super.initState();
-    // gyroscopeEvents.listen((GyroscopeEvent event) {
-    //   ballGame.move([event.x, event.y, event.z]);
-    // });
-    // userAccelerometerEvents.listen((UserAccelerometerEvent event) {
-    //   ballGame.move([event.x, event.y, event.z]);
-    // });
-    // motionSensors.gyroscope.listen((GyroscopeEvent event) {
-    //   ballGame.move([event.x, event.y, event.z]);
-    // });
     motionSensors.accelerometerUpdateInterval = Duration
             .microsecondsPerSecond ~/
         30; //Sætter hvor ofte accelerometer skal opdatere (30 gange i sekundet)
@@ -158,6 +149,7 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
   // double gridCellSize = 15;
   int gridSize = 20;
   List<Wall> walls = [];
+  List<Traps> traps = [];
 
   List<List<List<int>>> grid =
       []; //initialisere grid med en liste af liste af liste af ints
@@ -193,19 +185,11 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
 
     triggerListInit();
 
-    textb.text = "test2";
 
-    textb.position = Vector2(width / 2, 2 * height / 6);
-    textb.textRenderer =
-        TextPaint(style: TextStyle(color: BasicPalette.black.color));
-    textb.size = Vector2(width / 3.333, height / (47 / 25));
-    textb.positionType = PositionType.viewport;
-
-    add(textb);
 
     recalibrateButton
-      ..sprite = await loadSprite('ball.png')
-      ..size = Vector2(width / 26.666, height / (376 / 25))
+      ..sprite = await loadSprite('recalibrate.png')
+      ..size = Vector2(width*2 / 26.666, height*2 / (376 / 25))
       ..position = Vector2(
           width - recalibrateButton.size.x, height - recalibrateButton.size.y)
       ..positionType = PositionType.viewport;
@@ -366,12 +350,13 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
     }
   }
 
-  List traps = [];
+  
   void createTraps() {
     for (int i = 0; i < traps.length; i++) {
       //fjerner alle instancer af trapene
       remove(traps[i]);
     }
+    traps.clear();
     getSolution(
       //finder løsningen til mazeen
       Vector2(gridSize - 1, gridSize - 1),
@@ -380,7 +365,7 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
     for (int i = 0; i < gridSize; i++) {
       for (int j = 0; j < gridSize; j++) {
         if (grid[i][j][5] == 0) {
-          if (Random().nextInt(10) == 0) {
+          if (Random().nextInt(10) == 1) {
             // hvis det er en tilfældigt tal mellem 0 og x så tilføjes en trap
             traps.add(Traps(position: Vector2(i * gridCellSize, j * gridCellSize)));
           }
@@ -574,7 +559,7 @@ class RecalibrateButton extends SpriteComponent with Tappable {
   @override
   bool onTapDown(TapDownInfo info) {
     // ballGame.recalibrate = true;
-    // ballGame.startGame();
+    newMaze = true;
     return true;
   }
 }
