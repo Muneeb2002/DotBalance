@@ -16,13 +16,13 @@ import 'package:flutter/services.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,  //fjerner status bar
       overlays: [SystemUiOverlay.bottom]);
-  SystemChrome.setPreferredOrientations([
+  SystemChrome.setPreferredOrientations([  //gør til landscape
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
   ]).then((value) => runApp(MaterialApp(
-        debugShowCheckedModeBanner: false,
+        debugShowCheckedModeBanner: false,   //fjerner debug banner fra hjørnet
         initialRoute: '/',
         routes: {
           '/': (context) => StartScreen(),

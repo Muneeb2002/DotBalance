@@ -1,26 +1,11 @@
-import 'dart:ui';
-
-import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
-import 'package:flame/geometry.dart';
 import 'package:flame/input.dart';
-import 'package:flame/palette.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
-// import 'package:sensors_plus/sensors_plus.dart';
-// import 'package:flame/image.dart';
-import 'package:flame/flame.dart';
-import 'package:flame/sprite.dart';
-import 'package:flutter/services.dart';
-// import 'package:flutter_sensors/flutter_sensors.dart';
-// import 'package:sensors/sensors.dart';
 import 'package:motion_sensors/motion_sensors.dart';
-
 import 'dart:async';
 import 'dart:math';
-
 //packgage filer
 import 'traps.dart';
 import 'wall.dart';
@@ -31,39 +16,26 @@ import 'endGoal.dart';
 
 BallGame ballGame = BallGame();
 
-final paint = BasicPalette.red.paint()..style = PaintingStyle.fill;
-final circle = CircleComponent(
-    radius: 200.0,
-    position: Vector2(10, 10),
-    paint: paint,
-    anchor: Anchor.center);
+
 
 TextPaint textPaint = TextPaint();
 
 SpriteComponent background = SpriteComponent();
 
-TextBoxComponent textb = TextBoxComponent();
 
-// double triggerX = 0, triggerY = 0;
+bool recalibrate = true;
 
-// bool recalibrate = true;
-// //TODO : skal sættes til true igen;
-
-// List startAcceleration = [0, 0, 0];
 
 double width = 0;
 double height = 0;
 
-// double gridCellSize = 150; //150
-// int gridSize = 20;
-// List<Wall> walls = [];
+
 Player player = Player();
 Vector2 vel = Vector2(0, 0);
 
-// List<List<List<int>>> grid = List.generate(gridSize,
-//     (_) => List.generate(gridSize, (_) => List.generate(6, (_) => 0)));
 
-bool newMaze = true;
+
+bool newMaze = false;
 
 var triggerList = List.generate(
     5,
@@ -75,6 +47,7 @@ var triggerList = List.generate(
 //[1] er y koordinaten på skærmen
 //[2] er hvilken hastighed bolden skal bevæge sig med i x-retning
 //[3] er hvilken hastighed bolden skal bevæge sig med i y-retning
+
 
 class HomeWidget extends StatefulWidget {
   const HomeWidget({Key? key}) : super(key: key);
@@ -111,16 +84,15 @@ class Accelerometer extends _HomeWidgetState {
 }
 
 class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
-  // var triggerList = List<List<Vector4>>;
+
   RecalibrateButton recalibrateButton = RecalibrateButton();
   Color backgroundColor() => Colors.white;
 
   double triggerX = 0, triggerY = 0;
 
-  // Player player = Player();
-  // Vector2 vel = Vector2(0, 0);
 
-  // Random rand = Random();
+
+  Random rand = Random();
 
   bool recalibrate = true;
 //TODO : skal sættes til true igen;
@@ -132,15 +104,15 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
       stopmovingLeft = false,
       stopmovingRight = false;
 
-  double gridCellSize = width / 8.888867; //150
+  double gridCellSize = 1333.333 / 8.888867; //150
   // double gridCellSize = 15;
   int gridSize = 20;
   List<Wall> walls = [];
+  List<Traps> traps = [];
 
   List<List<List<int>>> grid =
       []; //initialisere grid med en liste af liste af liste af ints
 
-  bool isGameOver = false;
 
   @override
   Future<void> onLoad() async {
@@ -152,32 +124,26 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
       width = size[1];
       height = size[0];
     }
+    loadPictures();
 
     startGame(); //kalder startGame metoden (som laver grid, labyrint, traps, sætter player, endGoal)
     add(player);
 
-    add(circle);
-    double middelx = size[0] / 2;
-    double middely = size[1] / 2;
-
-    circle.position = Vector2(middelx, middely);
-    circle.size = Vector2(width / 66.667, height / (188 / 5));
-    circle.positionType = PositionType.viewport;
+    
 
     triggerX = width / 2;
     triggerY = height / 2;
 
     triggerListInit();
 
-    textb.text = "test2";
 
-    textb.position = Vector2(width / 2, 2 * height / 6);
-    textb.textRenderer =
-        TextPaint(style: TextStyle(color: BasicPalette.black.color));
-    textb.size = Vector2(width / 3.333, height / (47 / 25));
-    textb.positionType = PositionType.viewport;
 
-    add(textb);
+    recalibrateButton
+      ..sprite = await loadSprite('recalibrate.png')
+      ..size = Vector2(width*2 / 26.666, height*2 / (376 / 25))
+      ..position = Vector2(
+          width - recalibrateButton.size.x, height - recalibrateButton.size.y)
+      ..positionType = PositionType.viewport;
 
     add(recalibrateButton);
 
@@ -187,10 +153,11 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
   }
 
   void startGame() {
-    //Denne funktion gør det muligt at genstarte spillet
-
+    int x = rand.nextInt(gridSize);
+    int y = rand.nextInt(gridSize);
+    // rand
     createGrid();
-    createMaze(Vector2(0, 0));
+    createMaze(Vector2(x.toDouble(), y.toDouble()));
     drawMaze();
     createTraps();
     createEndGoal();
@@ -217,6 +184,7 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
     //[3] om der er væg til venstre
     //[4] om den er cellen er besøgt,(bruges til maze generation og traps generation)
     //[5] om cellen udgør vejen til målet
+
     for (int i = 0; i < gridSize; i++) {
       for (int j = 0; j < gridSize; j++) {
         for (int k = 0; k < 4; k++) {
@@ -232,6 +200,7 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
     //Følgende kode er lavet taget løst ud fra følgende link: http://weblog.jamisbuck.org/2010/12/27/maze-generation-recursive-backtracking
     grid[position[0].toInt()][position[1].toInt()][4] =
         1; //sætter cellen til at være besøgt
+
     Vector2 N = Vector2(0, -1), //finder de næste celler hvor mazen kan gå hen
         S = Vector2(0, 1),
         E = Vector2(1, 0),
@@ -244,10 +213,10 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
       W
     ]; //tilføjer alle de 4 mulige retninger til en liste
     directions.shuffle(); //blander listen for at undgå bias
+    // print("dir ${directions}");
 
     for (int i = 0; i < directions.length; i++) {
-      Vector2 newPosition = position +
-          directions[i]; //finder den næste celler hvor mazen kan gå hen
+      Vector2 newPosition = position + directions[i];
       if (newPosition[0] >= 0 &&
           newPosition[0] < gridSize &&
           newPosition[1] >= 0 &&
@@ -287,7 +256,7 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
         for (int k = 0; k < 4; k++) {
           if ((k == 0 && grid[i][j][0] == 1) ||
               (k == 2 && grid[i][j][2] == 1)) {
-            //tjekker hvilken retning der er valgt og om der er væg over eller under og om der skal være en væg eller ej
+            ///tjekker hvilken retning der er valgt og om der er væg over eller under og om der skal være en væg eller ej
             Vector2 size = Vector2(gridCellSize, 5);
             Vector2 position = Vector2(i * gridCellSize, j * gridCellSize);
             if (k == 2) {
@@ -307,7 +276,7 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
 
             Vector2 position = Vector2(i * gridCellSize, j * gridCellSize);
             if (k == 1) {
-              //hvis væggen er tilføjre sættes positionen af væggen til følgende
+              //hvis væggen er til højre sættes positionen af væggen til følgende
               position =
                   Vector2(i * gridCellSize + gridCellSize, j * gridCellSize);
             }
@@ -328,26 +297,35 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
       }
     }
     for (int i = 0; i < walls.length; i++) {
-      //tilføjer væggen til scenen
-      add(walls[i]);
+      add(walls[i]); //tilføjer væggen til scenen
     }
   }
 
+  
   void createTraps() {
+    for (int i = 0; i < traps.length; i++) {
+      //fjerner alle instancer af trapene
+      remove(traps[i]);
+    }
+    traps.clear();
     getSolution(
       //finder løsningen til mazeen
       Vector2(gridSize - 1, gridSize - 1),
     );
-    grid[0][0][5] = 1; //slutpunktet til at være en del af mazen
+    grid[0][0][5] = 1;
     for (int i = 0; i < gridSize; i++) {
       for (int j = 0; j < gridSize; j++) {
         if (grid[i][j][5] == 0) {
-          if (Random().nextInt(10) == 0) {
+          if (Random().nextInt(10) == 1) {
             // hvis det er en tilfældigt tal mellem 0 og x så tilføjes en trap
-            add(Traps(position: Vector2(i * gridCellSize, j * gridCellSize)));
+            traps.add(Traps(position: Vector2(i * gridCellSize, j * gridCellSize)));
           }
         }
       }
+    }
+
+    for (int i = 0; i < traps.length; i++) {
+      add(traps[i]);
     }
   }
 
@@ -357,15 +335,13 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
     grid[position[0].toInt()][position[1].toInt()][4] =
         0; //sætter denne celle til at være besøgt
     if (position == Vector2(0, 0)) {
-      //returner true hvis den er kommet til målet
-      return true;
+      return true; //returner true hvis den er kommet til målet
     }
     Vector2 N = Vector2(0, -1), //finder mulige retninger
         S = Vector2(0, 1),
         E = Vector2(1, 0),
         W = Vector2(-1, 0);
     List directions = [N, E, S, W];
-
     for (int i = 0; i < directions.length; i++) {
       Vector2 newPosition = position + directions[i];
 
@@ -375,7 +351,7 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
           newPosition[1] <
               gridSize && //hvis den nye position er indenfor griden
           grid[position[0].toInt()][position[1].toInt()][i] ==
-              0 && //tjekker om der ikke er en væg
+              0 && //hvis den nye position er indenfor griden
           grid[newPosition[0].toInt()][newPosition[1].toInt()][4] == 1) {
         //tjeckker om den nye celle ikke er besøgt
         if (getSolution(newPosition)) {
@@ -390,7 +366,8 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
   }
 
   void createEndGoal() {
-    add(EndGoal()); // tilføjer et slut punkt
+    // tilføjer et slut punkt
+    add(EndGoal());
   }
 
   void triggerListInit() {
@@ -404,18 +381,10 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
       }
     }
 
-    for (int i = 0; i < 5; i++) {
-      for (int j = 0; j < 5; j++) {
-        CircleComponent circle = CircleComponent(
-            radius: 20,
-            position: Vector2(triggerList[i][j][0], triggerList[i][j][1]),
-            paint: paint,
-            anchor: Anchor.center);
-        circle.positionType = PositionType.viewport;
-        add(circle);
-      }
-    }
+
   }
+
+  void loadPictures() async {}
 
   @override
   update(double dt) {
@@ -424,10 +393,6 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
       startGame();
       newMaze = false;
     }
-    // startGame();
-    // print("${walls[0].position.x} +  ${walls[0].position.y}");
-    // move();
-    // move(getGyro());
   }
 
   @override
@@ -436,8 +401,7 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
   }
 
   void move(List gyro) {
-    // print(gyro);
-    // List gyro =
+
     if (recalibrate) {
       recalibrate = false;
       startAcceleration = gyro;
@@ -450,21 +414,20 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
     triggerY =
         ((gyro[1] - startAcceleration[1]) * (height / (188 / 25)) + height / 2);
 
-    if (triggerX <= 2 * circle.size.x) {
+    if (triggerX <= 2 * (width / 66.667)) {
       //sørger for triggerne ikke kan gå ud af skærmen
-      triggerX = 6 * circle.size.x;
-    } else if (triggerX >= width - 2 * circle.size.x) {
-      triggerX = width - 6 * circle.size.x;
+      triggerX = 6 * (width / 66.667);
+    } else if (triggerX >= width - 2 * (width / 66.667)) {
+      triggerX = width - 6 * (width / 66.667);
     }
 
-    if (triggerY <= 2 * circle.size.y) {
-      triggerY = 6 * circle.size.y;
-    } else if (triggerY >= height - 2 * circle.size.y) {
-      triggerY = height - 6 * circle.size.y;
+    if (triggerY <= 2 * height/(188/5)) {
+      triggerY = 6 * height/(188/5);
+    } else if (triggerY >= height - 2 * height/(188/5)) {
+      triggerY = height - 6 * height/(188/5);
     }
 
-    circle.position.x = triggerX;
-    circle.position.y = triggerY;
+
 
     if (vel.y > 0 && stopmovingDown) {
       //stop bevægelsen i en specifik retning
@@ -480,9 +443,7 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
       vel.x = 0;
     }
 
-    if (!isGameOver) {
-      player.position += vel; //opdatere spillerens position
-    }
+    player.position += vel; //opdatere spillerens position
 
     for (int i = 0; i < 5; i++) {
       for (int j = 0; j < 5; j++) {
@@ -497,7 +458,6 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
       }
     }
   }
-
   // void gameOver() {
   //   isGameOver = true;
   //   final style = TextStyle(
@@ -530,20 +490,11 @@ class BallGame extends FlameGame with HasTappables, HasCollisionDetection {
 //   }
 // }
 
-class RecalibrateButton extends RectangleComponent with Tappable {
-  RecalibrateButton() {
-    positionType = PositionType.viewport;
-    this.width = width / 10;
-    this.height = height / 10;
-    position = Vector2(width,height);
-    anchor = Anchor.bottomRight;
-    this.paint = BasicPalette.black.paint()..style = PaintingStyle.fill;
-  }
+class RecalibrateButton extends SpriteComponent with Tappable {
   @override
   bool onTapDown(TapDownInfo info) {
-    // ballGame.recalibrate = true;
-    // ballGame.startGame();
-    // ballGame.gameOver();
+    ballGame.recalibrate = true;
+    
     return true;
   }
 }
