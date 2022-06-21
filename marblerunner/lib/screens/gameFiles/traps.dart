@@ -10,7 +10,8 @@ class Traps extends CircleComponent with CollisionCallbacks {
     this.position =
         Vector2(position[0] + ballGame.gridCellSize / 2, position[1] + ballGame.gridCellSize / 2);
     anchor = Anchor.center;
-    this.paint = BasicPalette.black.paint()..style = PaintingStyle.fill;
+    Paint color = Paint()..color = Color.fromRGBO(74, 81, 84, 1);
+    this.paint = color..style = PaintingStyle.fill;
 
     add(CircleHitbox());
   }
